@@ -7,7 +7,7 @@ import type { CVAnalysisResult } from "@/lib/types";
 import { toast } from "@/hooks/use-toast";
 
 interface HeroSectionProps {
-  onAnalysisComplete: (result: CVAnalysisResult) => void;
+  onAnalysisComplete: (result: CVAnalysisResult, cvText: string, jdText: string) => void;
 }
 
 const HeroSection = ({ onAnalysisComplete }: HeroSectionProps) => {
@@ -43,7 +43,7 @@ const HeroSection = ({ onAnalysisComplete }: HeroSectionProps) => {
         return;
       }
       const result = await analyzeCv(cvText, jobDescription);
-      onAnalysisComplete(result);
+      onAnalysisComplete(result, cvText, jobDescription);
 
       // Scroll to results
       setTimeout(() => {
