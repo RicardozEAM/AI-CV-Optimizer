@@ -7,7 +7,7 @@ import type { CVAnalysisResult } from "@/lib/types";
 import { toast } from "@/hooks/use-toast";
 
 interface HeroSectionProps {
-  onAnalysisComplete: (result: CVAnalysisResult) => void;
+  onAnalysisComplete: (result: CVAnalysisResult, cvText: string, jdText: string) => void;
 }
 
 const HeroSection = ({ onAnalysisComplete }: HeroSectionProps) => {
