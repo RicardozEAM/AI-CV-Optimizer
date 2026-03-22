@@ -1,11 +1,20 @@
 import { useState, useRef } from "react";
-import { Upload, Link2, FileText, X } from "lucide-react";
+import { Upload, Link2, FileText, X, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { extractTextFromPdf } from "@/lib/pdf-extract";
+import { analyzeCv } from "@/lib/analyze-cv";
+import type { CVAnalysisResult } from "@/lib/types";
+import { toast } from "@/hooks/use-toast";
 
-const HeroSection = () => {
+interface HeroSectionProps {
+  onAnalysisComplete: (result: CVAnalysisResult) => void;
+}
+
+const HeroSection = ({ onAnalysisComplete }: HeroSectionProps) => {
   const [file, setFile] = useState<File | null>(null);
   const [isDragging, setIsDragging] = useState(false);
   const [jobDescription, setJobDescription] = useState("");
+  const [isAnalyzing, setIsAnalyzing] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const handleDrop = (e: React.DragEvent) => {
@@ -20,9 +29,36 @@ const HeroSection = () => {
     if (selected) setFile(selected);
   };
 
+  const handleAnalyze = async () => {
+    if (!file || !jobDescription.trim()) {
+      toast({ title: "Faltan datos", description: "Sube tu CV en PDF y pega la descripción de la vacante.", variant: "destructive" });
+      return;
+    }
+
+    setIsAnalyzing(true);
+    try {
+      const cvText = await extractTextFromPdf(file);
+      if (!cvText.trim()) {
+        toast({ title: "PDF vacío", description: "No se pudo extraer texto del PDF. Asegúrate de que no sea una imagen escaneada.", variant: "destructive" });
+        return;
+      }
+      const result = await analyzeCv(cvText, jobDescription);
+      onAnalysisComplete(result);
+
+      // Scroll to results
+      setTimeout(() => {
+        document.getElementById("resultados")?.scrollIntoView({ behavior: "smooth" });
+      }, 200);
+    } catch (err: any) {
+      console.error("Analysis error:", err);
+      toast({ title: "Error en el análisis", description: err.message || "Intenta de nuevo.", variant: "destructive" });
+    } finally {
+      setIsAnalyzing(false);
+    }
+  };
+
   return (
     <section className="relative overflow-hidden py-20 md:py-32">
-      {/* Subtle background decorations */}
       <div className="pointer-events-none absolute inset-0">
         <div className="absolute -top-40 -right-40 h-[500px] w-[500px] rounded-full bg-primary/5 blur-3xl" />
         <div className="absolute -bottom-40 -left-40 h-[400px] w-[400px] rounded-full bg-accent/5 blur-3xl" />
@@ -43,7 +79,6 @@ const HeroSection = () => {
           </p>
         </div>
 
-        {/* Bento Upload Area */}
         <div className="mx-auto max-w-4xl grid gap-4 md:grid-cols-2 opacity-0 animate-fade-up" style={{ animationDelay: "150ms" }}>
           {/* PDF Upload Card */}
           <div
@@ -68,10 +103,7 @@ const HeroSection = () => {
               <div className="flex items-center gap-3 rounded-xl bg-secondary p-4">
                 <FileText className="h-5 w-5 text-primary" />
                 <span className="text-sm font-medium text-foreground truncate flex-1">{file.name}</span>
-                <button
-                  onClick={() => setFile(null)}
-                  className="text-muted-foreground hover:text-foreground transition-colors"
-                >
+                <button onClick={() => setFile(null)} className="text-muted-foreground hover:text-foreground transition-colors">
                   <X className="h-4 w-4" />
                 </button>
               </div>
@@ -86,13 +118,7 @@ const HeroSection = () => {
               </button>
             )}
 
-            <input
-              ref={fileInputRef}
-              type="file"
-              accept=".pdf"
-              onChange={handleFileChange}
-              className="hidden"
-            />
+            <input ref={fileInputRef} type="file" accept=".pdf" onChange={handleFileChange} className="hidden" />
           </div>
 
           {/* Job Description Card */}
@@ -106,7 +132,6 @@ const HeroSection = () => {
                 <p className="text-xs text-muted-foreground">Descripción del empleo</p>
               </div>
             </div>
-
             <textarea
               value={jobDescription}
               onChange={(e) => setJobDescription(e.target.value)}
@@ -116,12 +141,18 @@ const HeroSection = () => {
           </div>
         </div>
 
-        {/* CTA */}
         <div className="mt-8 text-center opacity-0 animate-fade-up" style={{ animationDelay: "300ms" }}>
-          <Button variant="hero" disabled={!file && !jobDescription}>
-            Analizar mi CV gratis
+          <Button variant="hero" disabled={(!file || !jobDescription.trim()) || isAnalyzing} onClick={handleAnalyze}>
+            {isAnalyzing ? (
+              <>
+                <Loader2 className="h-5 w-5 animate-spin" />
+                Analizando...
+              </>
+            ) : (
+              "Analizar mi CV gratis"
+            )}
           </Button>
-          <p className="mt-3 text-xs text-muted-foreground">Sin registro · Resultado en 10 segundos</p>
+          <p className="mt-3 text-xs text-muted-foreground">Sin registro · Resultado en ~15 segundos</p>
         </div>
       </div>
     </section>
