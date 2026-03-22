@@ -1,4 +1,4 @@
-import { AlertTriangle, CheckCircle, XCircle, ShieldCheck, Target, FileWarning } from "lucide-react";
+import { AlertTriangle, CheckCircle, XCircle } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import type { CVAnalysisResult } from "@/lib/types";
 
