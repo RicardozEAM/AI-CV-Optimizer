@@ -1,0 +1,131 @@
+import { useState, useRef } from "react";
+import { Upload, Link2, FileText, X } from "lucide-react";
+import { Button } from "@/components/ui/button";
+
+const HeroSection = () => {
+  const [file, setFile] = useState<File | null>(null);
+  const [isDragging, setIsDragging] = useState(false);
+  const [jobDescription, setJobDescription] = useState("");
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const handleDrop = (e: React.DragEvent) => {
+    e.preventDefault();
+    setIsDragging(false);
+    const dropped = e.dataTransfer.files[0];
+    if (dropped?.type === "application/pdf") setFile(dropped);
+  };
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const selected = e.target.files?.[0];
+    if (selected) setFile(selected);
+  };
+
+  return (
+    <section className="relative overflow-hidden py-20 md:py-32">
+      {/* Subtle background decorations */}
+      <div className="pointer-events-none absolute inset-0">
+        <div className="absolute -top-40 -right-40 h-[500px] w-[500px] rounded-full bg-primary/5 blur-3xl" />
+        <div className="absolute -bottom-40 -left-40 h-[400px] w-[400px] rounded-full bg-accent/5 blur-3xl" />
+      </div>
+
+      <div className="container relative z-10">
+        <div className="mx-auto max-w-3xl text-center mb-12 opacity-0 animate-fade-up">
+          <div className="inline-flex items-center gap-2 rounded-full border bg-card px-4 py-1.5 text-xs font-medium text-muted-foreground mb-6 shadow-sm">
+            <span className="h-1.5 w-1.5 rounded-full bg-accent" />
+            Optimizador de CV con Inteligencia Artificial
+          </div>
+          <h1 className="text-4xl font-extrabold tracking-tight text-foreground md:text-6xl text-balance" style={{ lineHeight: 1.08 }}>
+            Vence a los{" "}
+            <span className="text-primary">Algoritmos</span>
+          </h1>
+          <p className="mt-5 text-lg text-muted-foreground text-pretty max-w-xl mx-auto">
+            Tu CV es rechazado por robots antes de llegar a un humano. Nuestra IA lo optimiza para superar los filtros ATS en segundos.
+          </p>
+        </div>
+
+        {/* Bento Upload Area */}
+        <div className="mx-auto max-w-4xl grid gap-4 md:grid-cols-2 opacity-0 animate-fade-up" style={{ animationDelay: "150ms" }}>
+          {/* PDF Upload Card */}
+          <div
+            className={`glass-card rounded-2xl p-6 transition-all duration-300 ${
+              isDragging ? "ring-2 ring-primary shadow-lg shadow-primary/10 scale-[1.01]" : "shadow-sm hover:shadow-md"
+            }`}
+            onDragOver={(e) => { e.preventDefault(); setIsDragging(true); }}
+            onDragLeave={() => setIsDragging(false)}
+            onDrop={handleDrop}
+          >
+            <div className="flex items-center gap-3 mb-4">
+              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary/10">
+                <Upload className="h-5 w-5 text-primary" />
+              </div>
+              <div>
+                <h3 className="font-semibold text-foreground text-sm">Sube tu CV</h3>
+                <p className="text-xs text-muted-foreground">PDF, máx. 5MB</p>
+              </div>
+            </div>
+
+            {file ? (
+              <div className="flex items-center gap-3 rounded-xl bg-secondary p-4">
+                <FileText className="h-5 w-5 text-primary" />
+                <span className="text-sm font-medium text-foreground truncate flex-1">{file.name}</span>
+                <button
+                  onClick={() => setFile(null)}
+                  className="text-muted-foreground hover:text-foreground transition-colors"
+                >
+                  <X className="h-4 w-4" />
+                </button>
+              </div>
+            ) : (
+              <button
+                onClick={() => fileInputRef.current?.click()}
+                className="w-full rounded-xl border-2 border-dashed border-input bg-secondary/50 p-8 text-center transition-colors hover:border-primary/40 hover:bg-primary/5 active:scale-[0.98]"
+              >
+                <Upload className="mx-auto h-8 w-8 text-muted-foreground mb-2" />
+                <p className="text-sm font-medium text-foreground">Arrastra tu PDF aquí</p>
+                <p className="text-xs text-muted-foreground mt-1">o haz clic para seleccionar</p>
+              </button>
+            )}
+
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept=".pdf"
+              onChange={handleFileChange}
+              className="hidden"
+            />
+          </div>
+
+          {/* Job Description Card */}
+          <div className="glass-card rounded-2xl p-6 shadow-sm hover:shadow-md transition-shadow duration-300">
+            <div className="flex items-center gap-3 mb-4">
+              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-accent/10">
+                <Link2 className="h-5 w-5 text-accent" />
+              </div>
+              <div>
+                <h3 className="font-semibold text-foreground text-sm">Pega la vacante</h3>
+                <p className="text-xs text-muted-foreground">Descripción del empleo</p>
+              </div>
+            </div>
+
+            <textarea
+              value={jobDescription}
+              onChange={(e) => setJobDescription(e.target.value)}
+              placeholder="Pega aquí la descripción del puesto al que aplicas..."
+              className="w-full resize-none rounded-xl border border-input bg-secondary/50 p-4 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary/50 transition-all h-[140px]"
+            />
+          </div>
+        </div>
+
+        {/* CTA */}
+        <div className="mt-8 text-center opacity-0 animate-fade-up" style={{ animationDelay: "300ms" }}>
+          <Button variant="hero" disabled={!file && !jobDescription}>
+            Analizar mi CV gratis
+          </Button>
+          <p className="mt-3 text-xs text-muted-foreground">Sin registro · Resultado en 10 segundos</p>
+        </div>
+      </div>
+    </section>
+  );
+};
+
+export default HeroSection;
