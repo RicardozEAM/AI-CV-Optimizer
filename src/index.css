@@ -96,3 +96,12 @@
     --score-color: hsl(var(--warning));
   }
 }
+
+@keyframes pulse-subtle {
+  0%, 100% { box-shadow: 0 0 0 0 hsl(215 80% 45% / 0.4); }
+  50% { box-shadow: 0 0 0 8px hsl(215 80% 45% / 0); }
+}
+
+.animate-pulse-subtle {
+  animation: pulse-subtle 2s ease-in-out infinite;
+}
