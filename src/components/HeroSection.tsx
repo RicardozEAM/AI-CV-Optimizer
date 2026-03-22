@@ -43,7 +43,7 @@ const HeroSection = ({ onAnalysisComplete }: HeroSectionProps) => {
         return;
       }
       const result = await analyzeCv(cvText, jobDescription);
-      onAnalysisComplete(result);
+      onAnalysisComplete(result, cvText, jobDescription);
 
       // Scroll to results
       setTimeout(() => {
