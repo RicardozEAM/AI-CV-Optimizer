@@ -1,8 +1,10 @@
 import { useState } from "react";
-import { Target, Loader2, Send } from "lucide-react";
+import { Loader2, Send } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import type { ValidationQuestion } from "@/lib/types";
+
+const MIN_CHARS = 50;
 
 interface ValidationQuestionsFormProps {
   questions: ValidationQuestion[];
@@ -13,7 +15,7 @@ interface ValidationQuestionsFormProps {
 const ValidationQuestionsForm = ({ questions, onSubmit, isSubmitting }: ValidationQuestionsFormProps) => {
   const [answers, setAnswers] = useState<Record<string, string>>({});
 
-  const allAnswered = questions.every((q) => answers[q.id]?.trim());
+  const allAnswered = questions.every((q) => (answers[q.id]?.trim().length ?? 0) >= MIN_CHARS);
 
   const handleSubmit = () => {
     if (allAnswered) onSubmit(answers);
@@ -30,35 +32,48 @@ const ValidationQuestionsForm = ({ questions, onSubmit, isSubmitting }: Validati
         </p>
 
         <div className="space-y-6">
-          {questions.map((vq, i) => (
-            <div key={vq.id} className="rounded-xl bg-secondary/60 p-5">
-              <div className="flex items-start gap-3 mb-3">
-                <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-primary/10 text-primary text-xs font-bold shrink-0 mt-0.5">
-                  {i + 1}
+          {questions.map((vq, i) => {
+            const len = answers[vq.id]?.trim().length ?? 0;
+            const isValid = len >= MIN_CHARS;
+            return (
+              <div key={vq.id} className="rounded-xl bg-secondary/60 p-5">
+                <div className="flex items-start gap-3 mb-3">
+                  <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-primary/10 text-primary text-xs font-bold shrink-0 mt-0.5">
+                    {i + 1}
+                  </div>
+                  <div className="min-w-0">
+                    <p className="text-sm font-medium text-foreground mb-1">{vq.question}</p>
+                    <p className="text-xs text-muted-foreground">
+                      <span className="font-semibold">¿Por qué?</span> {vq.why_critical}
+                    </p>
+                  </div>
                 </div>
-                <div className="min-w-0">
-                  <p className="text-sm font-medium text-foreground mb-1">{vq.question}</p>
-                  <p className="text-xs text-muted-foreground">
-                    <span className="font-semibold">¿Por qué?</span> {vq.why_critical}
-                  </p>
+                <Textarea
+                  value={answers[vq.id] || ""}
+                  onChange={(e) => setAnswers((prev) => ({ ...prev, [vq.id]: e.target.value }))}
+                  placeholder="Escribe tu respuesta aquí (mínimo 50 caracteres)..."
+                  className="mt-2 bg-background/60 border-input/50 focus:ring-primary/30 min-h-[80px] resize-none text-sm"
+                  disabled={isSubmitting}
+                />
+                <div className="flex justify-end mt-1.5">
+                  <span className={`text-[11px] tabular-nums ${isValid ? "text-success" : "text-muted-foreground"}`}>
+                    {len}/{MIN_CHARS} caracteres
+                  </span>
                 </div>
               </div>
-              <Textarea
-                value={answers[vq.id] || ""}
-                onChange={(e) => setAnswers((prev) => ({ ...prev, [vq.id]: e.target.value }))}
-                placeholder="Escribe tu respuesta aquí..."
-                className="mt-2 bg-background/60 border-input/50 focus:ring-primary/30 min-h-[80px] resize-none text-sm"
-                disabled={isSubmitting}
-              />
-            </div>
-          ))}
+            );
+          })}
         </div>
 
         <div className="mt-8 flex flex-col items-center gap-3">
           <Button
-            variant="hero"
             disabled={!allAnswered || isSubmitting}
             onClick={handleSubmit}
+            className={`h-12 px-8 rounded-xl text-base font-semibold transition-all duration-300 ${
+              allAnswered && !isSubmitting
+                ? "bg-primary text-primary-foreground shadow-lg shadow-primary/30 hover:shadow-xl hover:shadow-primary/40 hover:bg-primary/90 ring-2 ring-primary/20 animate-pulse-subtle"
+                : "bg-primary text-primary-foreground opacity-60"
+            }`}
           >
             {isSubmitting ? (
               <>
@@ -73,7 +88,7 @@ const ValidationQuestionsForm = ({ questions, onSubmit, isSubmitting }: Validati
             )}
           </Button>
           {!allAnswered && (
-            <p className="text-xs text-muted-foreground">Responde las 3 preguntas para continuar</p>
+            <p className="text-xs text-muted-foreground">Responde las 3 preguntas (mín. 50 caracteres cada una)</p>
           )}
         </div>
       </div>

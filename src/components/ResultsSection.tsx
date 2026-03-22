@@ -171,18 +171,6 @@ const ResultsSection = ({ result }: ResultsSectionProps) => {
           </div>
         </div>
 
-        {/* Optimized CV Preview */}
-        {result?.optimized_cv_text && (
-          <div className={`mx-auto max-w-5xl mt-8 transition-all duration-700 ${visible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-8"}`} style={{ transitionDelay: "650ms" }}>
-            <div className="glass-card rounded-2xl p-8 shadow-sm">
-              <h3 className="text-sm font-semibold text-muted-foreground mb-2 uppercase tracking-wider">✅ CV Harvard Optimizado</h3>
-              <p className="text-sm text-muted-foreground mb-5">Tu CV recalculado y listo para enviar. Copia el texto o descárgalo.</p>
-              <pre className="whitespace-pre-wrap text-sm text-foreground bg-secondary/60 rounded-xl p-6 max-h-[500px] overflow-y-auto font-sans leading-relaxed">
-                {result.optimized_cv_text}
-              </pre>
-            </div>
-          </div>
-        )}
       </div>
     </section>
   );
