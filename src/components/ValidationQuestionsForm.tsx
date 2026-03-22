@@ -1,0 +1,84 @@
+import { useState } from "react";
+import { Target, Loader2, Send } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Textarea } from "@/components/ui/textarea";
+import type { ValidationQuestion } from "@/lib/types";
+
+interface ValidationQuestionsFormProps {
+  questions: ValidationQuestion[];
+  onSubmit: (answers: Record<string, string>) => void;
+  isSubmitting: boolean;
+}
+
+const ValidationQuestionsForm = ({ questions, onSubmit, isSubmitting }: ValidationQuestionsFormProps) => {
+  const [answers, setAnswers] = useState<Record<string, string>>({});
+
+  const allAnswered = questions.every((q) => answers[q.id]?.trim());
+
+  const handleSubmit = () => {
+    if (allAnswered) onSubmit(answers);
+  };
+
+  return (
+    <div className="mx-auto max-w-5xl mt-8 transition-all duration-700 opacity-100 translate-y-0">
+      <div className="glass-card rounded-2xl p-8 shadow-sm">
+        <h3 className="text-sm font-semibold text-muted-foreground mb-2 uppercase tracking-wider">
+          Paso 2 · Preguntas de Validación
+        </h3>
+        <p className="text-sm text-muted-foreground mb-8">
+          Responde estas 3 preguntas para que la IA pueda recalcular tu score y generar un CV Harvard optimizado.
+        </p>
+
+        <div className="space-y-6">
+          {questions.map((vq, i) => (
+            <div key={vq.id} className="rounded-xl bg-secondary/60 p-5">
+              <div className="flex items-start gap-3 mb-3">
+                <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-primary/10 text-primary text-xs font-bold shrink-0 mt-0.5">
+                  {i + 1}
+                </div>
+                <div className="min-w-0">
+                  <p className="text-sm font-medium text-foreground mb-1">{vq.question}</p>
+                  <p className="text-xs text-muted-foreground">
+                    <span className="font-semibold">¿Por qué?</span> {vq.why_critical}
+                  </p>
+                </div>
+              </div>
+              <Textarea
+                value={answers[vq.id] || ""}
+                onChange={(e) => setAnswers((prev) => ({ ...prev, [vq.id]: e.target.value }))}
+                placeholder="Escribe tu respuesta aquí..."
+                className="mt-2 bg-background/60 border-input/50 focus:ring-primary/30 min-h-[80px] resize-none text-sm"
+                disabled={isSubmitting}
+              />
+            </div>
+          ))}
+        </div>
+
+        <div className="mt-8 flex flex-col items-center gap-3">
+          <Button
+            variant="hero"
+            disabled={!allAnswered || isSubmitting}
+            onClick={handleSubmit}
+          >
+            {isSubmitting ? (
+              <>
+                <Loader2 className="h-5 w-5 animate-spin" />
+                Recalculando y generando CV...
+              </>
+            ) : (
+              <>
+                <Send className="h-5 w-5" />
+                Generar CV Harvard Optimizado
+              </>
+            )}
+          </Button>
+          {!allAnswered && (
+            <p className="text-xs text-muted-foreground">Responde las 3 preguntas para continuar</p>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default ValidationQuestionsForm;
