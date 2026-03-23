@@ -362,7 +362,7 @@ const OptimizedCvPreview = ({ cv }: OptimizedCvPreviewProps) => {
               <h3 className="text-xs font-bold uppercase tracking-wider text-muted-foreground mb-2">Certificaciones</h3>
               <ul className="space-y-1">
                 {cv.certifications.map((c, i) => (
-                  <li key={i} className="text-sm text-foreground">• {c}</li>
+                  <li key={i} className="text-sm text-foreground">• {toSafeString(c)}</li>
                 ))}
               </ul>
             </div>
