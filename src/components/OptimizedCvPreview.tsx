@@ -60,7 +60,7 @@ function buildPlainText(cv: OptimizedCv): string {
     lines.push(`${job.role} — ${job.company}`);
     lines.push(job.period);
     for (const a of job.achievements) {
-      lines.push(`• ${a}`);
+      lines.push(`• ${toSafeString(a)}`);
     }
     lines.push("");
   }
