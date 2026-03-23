@@ -1,4 +1,4 @@
-import { AlertTriangle, CheckCircle, XCircle } from "lucide-react";
+import { AlertTriangle, CheckCircle, XCircle, Info } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import type { CVAnalysisResult } from "@/lib/types";
 
@@ -19,7 +19,6 @@ const ResultsSection = ({ result }: ResultsSectionProps) => {
     return () => observer.disconnect();
   }, []);
 
-  // Reset animation when new result arrives
   useEffect(() => {
     if (result) setVisible(true);
   }, [result]);
@@ -27,30 +26,28 @@ const ResultsSection = ({ result }: ResultsSectionProps) => {
   const CIRCUMFERENCE = 283;
 
   const isPlaceholder = !result;
-  const score = result?.match_score ?? 45;
+  const score = result?.analysis.match_score ?? 45;
   const offset = CIRCUMFERENCE - (score / 100) * CIRCUMFERENCE;
 
   const scoreColor = score >= 75 ? "hsl(var(--success))" : score >= 50 ? "hsl(var(--warning))" : "hsl(var(--destructive))";
   const scoreLabel = score >= 75 ? "Competitivo" : score >= 50 ? "Necesita mejoras" : "Necesita mejoras significativas";
 
-  const missingKeywords = result?.keywords_missing ?? [
+  const missingKeywords = result?.analysis.keywords_missing ?? [
     { term: "SAP", weight: "critical" as const, vacancy_frequency: 3 },
     { term: "Gestión de proyectos", weight: "critical" as const, vacancy_frequency: 2 },
     { term: "Scrum", weight: "medium" as const, vacancy_frequency: 1 },
-    { term: "Power BI", weight: "critical" as const, vacancy_frequency: 2 },
-    { term: "KPI", weight: "medium" as const, vacancy_frequency: 1 },
   ];
 
-  const structureAlerts = result?.technical_readability_issues ?? [
-    { issue_type: "layout", severity: "critical" as const, description: "Formato no óptimo para ATS", fix: "" },
-    { issue_type: "section", severity: "high" as const, description: "Falta sección de logros cuantificables", fix: "" },
-    { issue_type: "contact", severity: "medium" as const, description: "Información de contacto completa", fix: "" },
+  const structureAlerts = result?.analysis.structure_alerts ?? [
+    { type: "warning" as const, message: "Formato no óptimo para ATS", fix: "" },
+    { type: "error" as const, message: "Falta sección de logros cuantificables", fix: "" },
+    { type: "info" as const, message: "Información de contacto completa", fix: "" },
   ];
 
-  const severityIcon = {
-    critical: <XCircle className="h-4 w-4 text-destructive" />,
-    high: <AlertTriangle className="h-4 w-4 text-warning" />,
-    medium: <CheckCircle className="h-4 w-4 text-success" />,
+  const alertIcon = {
+    error: <XCircle className="h-4 w-4 text-destructive" />,
+    warning: <AlertTriangle className="h-4 w-4 text-warning" />,
+    info: <Info className="h-4 w-4 text-success" />,
   };
 
   return (
@@ -61,11 +58,7 @@ const ResultsSection = ({ result }: ResultsSectionProps) => {
             {isPlaceholder ? "Resultado del análisis" : "Tu diagnóstico ATS"}
           </h2>
           <p className="mt-3 text-muted-foreground max-w-md mx-auto text-pretty">
-            {isPlaceholder
-              ? "Así se verá tu diagnóstico tras analizar tu CV"
-              : result.ats_confidence_level === "alto"
-                ? "Análisis con alta confianza — resultados fiables"
-                : "Análisis completado"}
+            {isPlaceholder ? "Así se verá tu diagnóstico tras analizar tu CV" : "Análisis completado"}
           </p>
           {isPlaceholder && (
             <p className="mt-1 text-xs text-muted-foreground/60 italic">Vista previa con datos de ejemplo</p>
@@ -100,11 +93,11 @@ const ResultsSection = ({ result }: ResultsSectionProps) => {
             </div>
             <p className="mt-4 text-sm text-muted-foreground">{scoreLabel}</p>
 
-            {result?.score_breakdown && (
+            {result?.analysis.scoring_details && (
               <div className="mt-5 space-y-2 text-left">
-                <ScoreBar label="Keywords" value={result.score_breakdown.keywords} max={30} />
-                <ScoreBar label="Experiencia" value={result.score_breakdown.technical_experience} max={40} />
-                <ScoreBar label="Estructura" value={result.score_breakdown.harvard_structure} max={30} />
+                <ScoreBar label="Keywords" value={result.analysis.scoring_details.keywords} max={30} />
+                <ScoreBar label="Experiencia" value={result.analysis.scoring_details.experience} max={40} />
+                <ScoreBar label="Estructura" value={result.analysis.scoring_details.structure} max={30} />
               </div>
             )}
           </div>
@@ -133,11 +126,11 @@ const ResultsSection = ({ result }: ResultsSectionProps) => {
               ))}
             </div>
 
-            {result?.keywords_detected && result.keywords_detected.length > 0 && (
+            {result?.analysis.keywords_detected && result.analysis.keywords_detected.length > 0 && (
               <div className="mt-5">
                 <h4 className="text-xs font-semibold text-muted-foreground mb-2 uppercase tracking-wider">Detectadas ✓</h4>
                 <div className="flex flex-wrap gap-1.5">
-                  {result.keywords_detected.map((kw) => (
+                  {result.analysis.keywords_detected.map((kw) => (
                     <span key={kw.term} className="inline-flex items-center gap-1 rounded-md bg-success/10 px-2 py-1 text-xs font-medium text-success">
                       {kw.term}
                     </span>
@@ -158,9 +151,9 @@ const ResultsSection = ({ result }: ResultsSectionProps) => {
             <div className="space-y-2.5">
               {structureAlerts.map((alert, i) => (
                 <div key={i} className="flex items-start gap-3 rounded-lg bg-secondary/80 px-3 py-2.5">
-                  <span className="mt-0.5 shrink-0">{severityIcon[alert.severity]}</span>
+                  <span className="mt-0.5 shrink-0">{alertIcon[alert.type]}</span>
                   <div className="min-w-0">
-                    <span className="text-sm text-foreground block">{alert.description}</span>
+                    <span className="text-sm text-foreground block">{alert.message}</span>
                     {alert.fix && (
                       <span className="text-xs text-muted-foreground mt-0.5 block">💡 {alert.fix}</span>
                     )}
@@ -170,7 +163,6 @@ const ResultsSection = ({ result }: ResultsSectionProps) => {
             </div>
           </div>
         </div>
-
       </div>
     </section>
   );

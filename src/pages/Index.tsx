@@ -31,7 +31,6 @@ const Index = () => {
     setIsReanalyzing(true);
     try {
       const result = await analyzeCv(cvTextRef.current, jdTextRef.current, answers);
-      // Store result behind paywall
       setPendingOptimizedResult(result);
       setShowPaymentModal(true);
     } catch (err: any) {
@@ -56,7 +55,7 @@ const Index = () => {
   const showValidationForm =
     analysisResult?.validation_questions &&
     analysisResult.validation_questions.length > 0 &&
-    !analysisResult.optimized_cv_text &&
+    !analysisResult.optimized_cv &&
     !paymentComplete;
 
   return (
@@ -81,10 +80,10 @@ const Index = () => {
           </div>
         )}
 
-        {paymentComplete && analysisResult?.optimized_cv_text && (
+        {paymentComplete && analysisResult?.optimized_cv && (
           <div id="cv-optimizado" className="bg-secondary/40 pb-20">
             <div className="container">
-              <OptimizedCvPreview cvText={analysisResult.optimized_cv_text} />
+              <OptimizedCvPreview cv={analysisResult.optimized_cv} />
             </div>
           </div>
         )}
@@ -92,7 +91,7 @@ const Index = () => {
 
       <PaymentModal
         open={showPaymentModal}
-        projectedScore={pendingOptimizedResult?.match_score ?? 95}
+        projectedScore={pendingOptimizedResult?.analysis.match_score ?? 95}
         onClose={() => setShowPaymentModal(false)}
         onPaymentSuccess={handlePaymentSuccess}
       />
