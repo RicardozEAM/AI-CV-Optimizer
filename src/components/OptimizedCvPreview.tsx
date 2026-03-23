@@ -50,7 +50,7 @@ function buildPlainText(cv: OptimizedCv): string {
     lines.push("COMPETENCIAS CLAVE");
     for (let i = 0; i < cv.skill_grid.length; i += 3) {
       const row = cv.skill_grid.slice(i, i + 3);
-      lines.push(row.map(s => s.padEnd(25)).join(""));
+      lines.push(row.map(s => toSafeString(s).padEnd(25)).join(""));
     }
     lines.push("");
   }
