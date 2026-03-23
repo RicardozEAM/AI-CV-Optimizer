@@ -208,7 +208,7 @@ function generatePdf(cv: OptimizedCv) {
     doc.setFontSize(9.5);
     for (const c of cv.certifications) {
       checkPage(8);
-      const cLines = doc.splitTextToSize(`• ${c}`, usable);
+      const cLines = doc.splitTextToSize(`• ${toSafeString(c)}`, usable);
       doc.text(cLines, margin, y);
       y += cLines.length * 4.5 + 1;
     }
