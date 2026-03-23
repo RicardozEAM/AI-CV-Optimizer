@@ -73,7 +73,7 @@ function buildPlainText(cv: OptimizedCv): string {
 
   if (cv.certifications.length > 0) {
     lines.push("CERTIFICACIONES");
-    for (const c of cv.certifications) lines.push(`• ${c}`);
+    for (const c of cv.certifications) lines.push(`• ${toSafeString(c)}`);
   }
 
   return lines.join("\n");
