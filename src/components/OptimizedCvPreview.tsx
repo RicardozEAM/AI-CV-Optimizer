@@ -172,7 +172,7 @@ function generatePdf(cv: OptimizedCv) {
     doc.setFontSize(9.5);
     for (const a of job.achievements) {
       checkPage(10);
-      const bulletLines = doc.splitTextToSize(`• ${a}`, usable - 5);
+      const bulletLines = doc.splitTextToSize(`• ${toSafeString(a)}`, usable - 5);
       doc.text(bulletLines, margin + 3, y);
       y += bulletLines.length * 4.5 + 1;
     }
