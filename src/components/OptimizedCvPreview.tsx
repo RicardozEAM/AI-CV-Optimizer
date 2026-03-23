@@ -5,6 +5,31 @@ import { toast } from "@/hooks/use-toast";
 import type { OptimizedCv } from "@/lib/types";
 import jsPDF from "jspdf";
 
+/**
+ * Safely converts any value to a displayable string.
+ * Handles the case where the AI returns objects instead of plain strings
+ * (e.g. { institution: "...", degree: "...", period: "..." }).
+ */
+function toSafeString(value: unknown): string {
+  if (typeof value === "string") return value;
+  if (value === null || value === undefined) return "";
+  if (typeof value === "number" || typeof value === "boolean") return String(value);
+  if (typeof value === "object") {
+    const obj = value as Record<string, unknown>;
+    // Try common field names first
+    const preferred = obj.institution ?? obj.degree ?? obj.name ?? obj.title ?? obj.text ?? obj.description;
+    if (typeof preferred === "string") {
+      // Build a composite string from known fields
+      const parts = [obj.degree, obj.institution, obj.period].filter(
+        (v) => typeof v === "string" && v.length > 0
+      );
+      return parts.length > 0 ? parts.join(" — ") : preferred;
+    }
+    return JSON.stringify(value);
+  }
+  return String(value);
+}
+
 interface OptimizedCvPreviewProps {
   cv: OptimizedCv;
 }
@@ -25,7 +50,7 @@ function buildPlainText(cv: OptimizedCv): string {
     lines.push("COMPETENCIAS CLAVE");
     for (let i = 0; i < cv.skill_grid.length; i += 3) {
       const row = cv.skill_grid.slice(i, i + 3);
-      lines.push(row.map(s => s.padEnd(25)).join(""));
+      lines.push(row.map(s => toSafeString(s).padEnd(25)).join(""));
     }
     lines.push("");
   }
@@ -35,20 +60,20 @@ function buildPlainText(cv: OptimizedCv): string {
     lines.push(`${job.role} — ${job.company}`);
     lines.push(job.period);
     for (const a of job.achievements) {
-      lines.push(`• ${a}`);
+      lines.push(`• ${toSafeString(a)}`);
     }
     lines.push("");
   }
 
   if (cv.education.length > 0) {
     lines.push("EDUCACIÓN");
-    for (const ed of cv.education) lines.push(`• ${ed}`);
+    for (const ed of cv.education) lines.push(`• ${toSafeString(ed)}`);
     lines.push("");
   }
 
   if (cv.certifications.length > 0) {
     lines.push("CERTIFICACIONES");
-    for (const c of cv.certifications) lines.push(`• ${c}`);
+    for (const c of cv.certifications) lines.push(`• ${toSafeString(c)}`);
   }
 
   return lines.join("\n");
@@ -147,7 +172,7 @@ function generatePdf(cv: OptimizedCv) {
     doc.setFontSize(9.5);
     for (const a of job.achievements) {
       checkPage(10);
-      const bulletLines = doc.splitTextToSize(`• ${a}`, usable - 5);
+      const bulletLines = doc.splitTextToSize(`• ${toSafeString(a)}`, usable - 5);
       doc.text(bulletLines, margin + 3, y);
       y += bulletLines.length * 4.5 + 1;
     }
@@ -165,7 +190,7 @@ function generatePdf(cv: OptimizedCv) {
     doc.setFontSize(9.5);
     for (const ed of cv.education) {
       checkPage(8);
-      const edLines = doc.splitTextToSize(`• ${ed}`, usable);
+      const edLines = doc.splitTextToSize(`• ${toSafeString(ed)}`, usable);
       doc.text(edLines, margin, y);
       y += edLines.length * 4.5 + 1;
     }
@@ -183,7 +208,7 @@ function generatePdf(cv: OptimizedCv) {
     doc.setFontSize(9.5);
     for (const c of cv.certifications) {
       checkPage(8);
-      const cLines = doc.splitTextToSize(`• ${c}`, usable);
+      const cLines = doc.splitTextToSize(`• ${toSafeString(c)}`, usable);
       doc.text(cLines, margin, y);
       y += cLines.length * 4.5 + 1;
     }
@@ -294,7 +319,7 @@ const OptimizedCvPreview = ({ cv }: OptimizedCvPreviewProps) => {
               <div className="grid grid-cols-3 gap-2">
                 {cv.skill_grid.map((skill, i) => (
                   <div key={i} className="rounded-lg bg-secondary/70 px-3 py-2 text-center text-xs font-medium text-foreground">
-                    {skill}
+                    {toSafeString(skill)}
                   </div>
                 ))}
               </div>
@@ -311,7 +336,7 @@ const OptimizedCvPreview = ({ cv }: OptimizedCvPreviewProps) => {
                 <ul className="mt-1.5 space-y-1">
                   {job.achievements.map((a, j) => (
                     <li key={j} className="text-sm text-foreground leading-relaxed pl-3 relative before:content-['•'] before:absolute before:left-0 before:text-muted-foreground">
-                      {a}
+                      {toSafeString(a)}
                     </li>
                   ))}
                 </ul>
@@ -325,7 +350,7 @@ const OptimizedCvPreview = ({ cv }: OptimizedCvPreviewProps) => {
               <h3 className="text-xs font-bold uppercase tracking-wider text-muted-foreground mb-2">Educación</h3>
               <ul className="space-y-1">
                 {cv.education.map((ed, i) => (
-                  <li key={i} className="text-sm text-foreground">• {ed}</li>
+                  <li key={i} className="text-sm text-foreground">• {toSafeString(ed)}</li>
                 ))}
               </ul>
             </div>
@@ -337,7 +362,7 @@ const OptimizedCvPreview = ({ cv }: OptimizedCvPreviewProps) => {
               <h3 className="text-xs font-bold uppercase tracking-wider text-muted-foreground mb-2">Certificaciones</h3>
               <ul className="space-y-1">
                 {cv.certifications.map((c, i) => (
-                  <li key={i} className="text-sm text-foreground">• {c}</li>
+                  <li key={i} className="text-sm text-foreground">• {toSafeString(c)}</li>
                 ))}
               </ul>
             </div>
