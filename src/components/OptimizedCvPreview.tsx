@@ -330,7 +330,7 @@ const OptimizedCvPreview = ({ cv }: OptimizedCvPreviewProps) => {
           )}
 
           {/* Certifications */}
-          {cv.certifications.length > 0 && (
+          {Array.isArray(cv.certifications) && cv.certifications.length > 0 && (
             <div className="mt-5">
               <h3 className="text-xs font-bold uppercase tracking-wider text-muted-foreground mb-2">Certificaciones</h3>
               <ul className="space-y-1">
