@@ -1,7 +1,7 @@
 import { useState, useRef } from "react";
 import { Upload, Link2, FileText, X, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { extractTextFromPdf } from "@/lib/pdf-extract";
+import { extractText } from "@/lib/pdf-extract";
 import { analyzeCv } from "@/lib/analyze-cv";
 import type { CVAnalysisResult } from "@/lib/types";
 import { toast } from "@/hooks/use-toast";
@@ -10,6 +10,12 @@ interface HeroSectionProps {
   onAnalysisComplete: (result: CVAnalysisResult, cvText: string, jdText: string) => void;
 }
 
+const ACCEPTED_TYPES = [
+  "application/pdf",
+  "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+  "application/msword",
+];
+
 const HeroSection = ({ onAnalysisComplete }: HeroSectionProps) => {
   const [file, setFile] = useState<File | null>(null);
   const [isDragging, setIsDragging] = useState(false);
@@ -17,11 +23,16 @@ const HeroSection = ({ onAnalysisComplete }: HeroSectionProps) => {
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
+  const isValidFile = (f: File) => {
+    const name = f.name.toLowerCase();
+    return ACCEPTED_TYPES.includes(f.type) || name.endsWith(".pdf") || name.endsWith(".docx") || name.endsWith(".doc");
+  };
+
   const handleDrop = (e: React.DragEvent) => {
     e.preventDefault();
     setIsDragging(false);
     const dropped = e.dataTransfer.files[0];
-    if (dropped?.type === "application/pdf") setFile(dropped);
+    if (dropped && isValidFile(dropped)) setFile(dropped);
   };
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -31,21 +42,20 @@ const HeroSection = ({ onAnalysisComplete }: HeroSectionProps) => {
 
   const handleAnalyze = async () => {
     if (!file || !jobDescription.trim()) {
-      toast({ title: "Faltan datos", description: "Sube tu CV en PDF y pega la descripción de la vacante.", variant: "destructive" });
+      toast({ title: "Faltan datos", description: "Sube tu CV (PDF o DOCX) y pega la descripción de la vacante.", variant: "destructive" });
       return;
     }
 
     setIsAnalyzing(true);
     try {
-      const cvText = await extractTextFromPdf(file);
+      const cvText = await extractText(file);
       if (!cvText.trim()) {
-        toast({ title: "PDF vacío", description: "No se pudo extraer texto del PDF. Asegúrate de que no sea una imagen escaneada.", variant: "destructive" });
+        toast({ title: "Archivo vacío", description: "No se pudo extraer texto del archivo. Asegúrate de que no sea una imagen escaneada.", variant: "destructive" });
         return;
       }
       const result = await analyzeCv(cvText, jobDescription);
       onAnalysisComplete(result, cvText, jobDescription);
 
-      // Scroll to results
       setTimeout(() => {
         document.getElementById("resultados")?.scrollIntoView({ behavior: "smooth" });
       }, 200);
@@ -80,7 +90,7 @@ const HeroSection = ({ onAnalysisComplete }: HeroSectionProps) => {
         </div>
 
         <div className="mx-auto max-w-4xl grid gap-4 md:grid-cols-2 opacity-0 animate-fade-up" style={{ animationDelay: "150ms" }}>
-          {/* PDF Upload Card */}
+          {/* File Upload Card */}
           <div
             className={`glass-card rounded-2xl p-6 transition-all duration-300 ${
               isDragging ? "ring-2 ring-primary shadow-lg shadow-primary/10 scale-[1.01]" : "shadow-sm hover:shadow-md"
@@ -95,7 +105,7 @@ const HeroSection = ({ onAnalysisComplete }: HeroSectionProps) => {
               </div>
               <div>
                 <h3 className="font-semibold text-foreground text-sm">Sube tu CV</h3>
-                <p className="text-xs text-muted-foreground">PDF, máx. 5MB</p>
+                <p className="text-xs text-muted-foreground">PDF o DOCX, máx. 5MB</p>
               </div>
             </div>
 
@@ -113,12 +123,12 @@ const HeroSection = ({ onAnalysisComplete }: HeroSectionProps) => {
                 className="w-full rounded-xl border-2 border-dashed border-input bg-secondary/50 p-8 text-center transition-colors hover:border-primary/40 hover:bg-primary/5 active:scale-[0.98]"
               >
                 <Upload className="mx-auto h-8 w-8 text-muted-foreground mb-2" />
-                <p className="text-sm font-medium text-foreground">Arrastra tu PDF aquí</p>
+                <p className="text-sm font-medium text-foreground">Arrastra tu PDF o DOCX aquí</p>
                 <p className="text-xs text-muted-foreground mt-1">o haz clic para seleccionar</p>
               </button>
             )}
 
-            <input ref={fileInputRef} type="file" accept=".pdf" onChange={handleFileChange} className="hidden" />
+            <input ref={fileInputRef} type="file" accept=".pdf,.docx,.doc" onChange={handleFileChange} className="hidden" />
           </div>
 
           {/* Job Description Card */}

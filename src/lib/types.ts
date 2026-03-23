@@ -1,3 +1,11 @@
+// V2.0 JSON Schema Types
+
+export interface StructureAlert {
+  type: "warning" | "error" | "info";
+  message: string;
+  fix: string;
+}
+
 export interface KeywordDetected {
   term: string;
   weight: "critical" | "high" | "medium";
@@ -11,34 +19,51 @@ export interface KeywordMissing {
   vacancy_frequency: number;
 }
 
-export interface ReadabilityIssue {
-  issue_type: string;
-  severity: "critical" | "high" | "medium";
-  description: string;
-  fix: string;
-}
-
 export interface ValidationQuestion {
-  id: "vq1" | "vq2" | "vq3";
-  gap_identified: string;
+  id: number;
   question: string;
-  why_critical: string;
+  context: string;
 }
 
-export interface ScoreBreakdown {
+export interface ScoringDetails {
   keywords: number;
-  technical_experience: number;
-  harvard_structure: number;
+  experience: number;
+  structure: number;
+}
+
+export interface WorkExperience {
+  company: string;
+  role: string;
+  period: string;
+  is_current: boolean;
+  achievements: string[];
+}
+
+export interface CVHeader {
+  full_name: string;
+  location: string;
+  email: string;
+  phone: string;
+  linkedin_url: string;
+}
+
+export interface OptimizedCv {
+  header: CVHeader;
+  summary: string;
+  skill_grid: string[];
+  work_experience: WorkExperience[];
+  education: string[];
+  certifications: string[];
 }
 
 export interface CVAnalysisResult {
-  match_score: number;
-  score_breakdown: ScoreBreakdown;
-  ats_confidence_level: "bajo" | "medio" | "alto";
-  recommended_action: "rechazar_estructura" | "optimizar" | "listo_para_envio";
-  keywords_detected: KeywordDetected[];
-  keywords_missing: KeywordMissing[];
-  technical_readability_issues: ReadabilityIssue[];
+  analysis: {
+    match_score: number;
+    scoring_details: ScoringDetails;
+    keywords_detected: KeywordDetected[];
+    keywords_missing: KeywordMissing[];
+    structure_alerts: StructureAlert[];
+  };
   validation_questions: ValidationQuestion[];
-  optimized_cv_text: string | null;
+  optimized_cv: OptimizedCv | null;
 }

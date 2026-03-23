@@ -15,7 +15,7 @@ interface ValidationQuestionsFormProps {
 const ValidationQuestionsForm = ({ questions, onSubmit, isSubmitting }: ValidationQuestionsFormProps) => {
   const [answers, setAnswers] = useState<Record<string, string>>({});
 
-  const allAnswered = questions.every((q) => (answers[q.id]?.trim().length ?? 0) >= MIN_CHARS);
+  const allAnswered = questions.every((q) => (answers[String(q.id)]?.trim().length ?? 0) >= MIN_CHARS);
 
   const handleSubmit = () => {
     if (allAnswered) onSubmit(answers);
@@ -33,7 +33,8 @@ const ValidationQuestionsForm = ({ questions, onSubmit, isSubmitting }: Validati
 
         <div className="space-y-6">
           {questions.map((vq, i) => {
-            const len = answers[vq.id]?.trim().length ?? 0;
+            const key = String(vq.id);
+            const len = answers[key]?.trim().length ?? 0;
             const isValid = len >= MIN_CHARS;
             return (
               <div key={vq.id} className="rounded-xl bg-secondary/60 p-5">
@@ -44,13 +45,13 @@ const ValidationQuestionsForm = ({ questions, onSubmit, isSubmitting }: Validati
                   <div className="min-w-0">
                     <p className="text-sm font-medium text-foreground mb-1">{vq.question}</p>
                     <p className="text-xs text-muted-foreground">
-                      <span className="font-semibold">¿Por qué?</span> {vq.why_critical}
+                      <span className="font-semibold">Contexto:</span> {vq.context}
                     </p>
                   </div>
                 </div>
                 <Textarea
-                  value={answers[vq.id] || ""}
-                  onChange={(e) => setAnswers((prev) => ({ ...prev, [vq.id]: e.target.value }))}
+                  value={answers[key] || ""}
+                  onChange={(e) => setAnswers((prev) => ({ ...prev, [key]: e.target.value }))}
                   placeholder="Escribe tu respuesta aquí (mínimo 50 caracteres)..."
                   className="mt-2 bg-background/60 border-input/50 focus:ring-primary/30 min-h-[80px] resize-none text-sm"
                   disabled={isSubmitting}
