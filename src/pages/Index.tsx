@@ -1,4 +1,12 @@
-import { useState, useRef, useEffect, useCallback } from "react";
+import {
+  useState,
+  useRef,
+  useEffect,
+  useCallback,
+  Component,
+  type ReactNode,
+  type ErrorInfo,
+} from "react";
 import Navbar from "@/components/Navbar";
 import HeroSection from "@/components/HeroSection";
 import StepFlowSection from "@/components/StepFlowSection";
@@ -9,133 +17,307 @@ import OptimizedCvPreview from "@/components/OptimizedCvPreview";
 import type { CVAnalysisResult } from "@/lib/types";
 import { analyzeCv } from "@/lib/analyze-cv";
 import { toast } from "@/hooks/use-toast";
-import { Loader2, RefreshCw, ChevronDown } from "lucide-react";
+import { Loader2, RefreshCw, ChevronDown, AlertTriangle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
-const QUESTIONS_TIMEOUT_MS = 5000;
+// ─── Constants ────────────────────────────────────────────────────────────────
+
+const QUESTIONS_TIMEOUT_MS = 10_000;
+const SILENT_RETRY_DELAY_MS = 4_000;
+
+// ─── Types ────────────────────────────────────────────────────────────────────
+
+type OptimizationPhase =
+  | "idle"
+  | "analyzing"
+  | "awaiting_answers"
+  | "reanalyzing"
+  | "pending_payment"
+  | "complete";
+
+interface AppState {
+  phase: OptimizationPhase;
+  analysisResult: CVAnalysisResult | null;
+  stagedResult: CVAnalysisResult | null;
+  questionsTimedOut: boolean;
+  isRegenerating: boolean;
+}
+
+// ─── Error Boundary ───────────────────────────────────────────────────────────
+
+interface ErrorBoundaryProps {
+  children: ReactNode;
+  fallback?: ReactNode;
+  name?: string;
+}
+
+interface ErrorBoundaryState {
+  hasError: boolean;
+  error: Error | null;
+}
+
+class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundaryState> {
+  state: ErrorBoundaryState = { hasError: false, error: null };
+
+  static getDerivedStateFromError(error: Error): ErrorBoundaryState {
+    return { hasError: true, error };
+  }
+
+  componentDidCatch(error: Error, info: ErrorInfo) {
+    console.error(`[ErrorBoundary:${this.props.name ?? "unknown"}]`, error, info.componentStack);
+  }
+
+  handleReset = () => this.setState({ hasError: false, error: null });
+
+  render() {
+    if (this.state.hasError) {
+      return (
+        this.props.fallback ?? (
+          <div className="flex flex-col items-center gap-4 py-12 text-center">
+            <AlertTriangle className="h-10 w-10 text-destructive" />
+            <p className="text-lg font-semibold text-destructive">
+              Algo salió mal en esta sección.
+            </p>
+            <p className="text-sm text-muted-foreground max-w-md">
+              {this.state.error?.message ?? "Error desconocido"}
+            </p>
+            <Button variant="outline" onClick={this.handleReset}>
+              Reintentar
+            </Button>
+          </div>
+        )
+      );
+    }
+    return this.props.children;
+  }
+}
+
+// ─── Guards ───────────────────────────────────────────────────────────────────
+
+function isValidAnalysisResult(result: unknown): result is CVAnalysisResult {
+  if (!result || typeof result !== "object") return false;
+  const r = result as Record<string, unknown>;
+  if (!r.analysis || typeof r.analysis !== "object") return false;
+  if (!Array.isArray(r.validation_questions)) return false;
+  return true;
+}
+
+function hasValidOptimizedCV(result: CVAnalysisResult | null): boolean {
+  if (!result?.optimized_cv) return false;
+  const cv = result.optimized_cv;
+  return !!(cv.header && cv.summary && Array.isArray(cv.work_experience));
+}
+
+function hasValidQuestions(result: CVAnalysisResult | null): boolean {
+  return !!(
+    result?.validation_questions &&
+    Array.isArray(result.validation_questions) &&
+    result.validation_questions.length > 0
+  );
+}
+
+// ─── Component ────────────────────────────────────────────────────────────────
 
 const Index = () => {
-  const [analysisResult, setAnalysisResult] = useState<CVAnalysisResult | null>(null);
-  const [isReanalyzing, setIsReanalyzing] = useState(false);
+  const [state, setState] = useState<AppState>({
+    phase: "idle",
+    analysisResult: null,
+    stagedResult: null,
+    questionsTimedOut: false,
+    isRegenerating: false,
+  });
   const [showPaymentModal, setShowPaymentModal] = useState(false);
-  const [paymentComplete, setPaymentComplete] = useState(false);
-  const [pendingOptimizedResult, setPendingOptimizedResult] = useState<CVAnalysisResult | null>(null);
-  const [questionsTimedOut, setQuestionsTimedOut] = useState(false);
-  const [isRegenerating, setIsRegenerating] = useState(false);
+
   const cvTextRef = useRef("");
   const jdTextRef = useRef("");
   const validationRef = useRef<HTMLDivElement>(null);
-  const timeoutRef = useRef<ReturnType<typeof setTimeout>>();
 
-  const hasQuestions =
-    analysisResult?.validation_questions && analysisResult.validation_questions.length > 0;
+  const timeoutIdRef = useRef<ReturnType<typeof setTimeout>>();
+  const retryIdRef = useRef<ReturnType<typeof setTimeout>>();
 
-  const showValidationForm = hasQuestions && !analysisResult?.optimized_cv && !paymentComplete;
+  const showValidationForm =
+    state.phase === "awaiting_answers" &&
+    hasValidQuestions(state.analysisResult) &&
+    !hasValidOptimizedCV(state.analysisResult);
 
-  // Auto-scroll to validation questions when analysis completes
+  // Cleanup on unmount
   useEffect(() => {
-    if (showValidationForm) {
-      const timer = setTimeout(() => {
-        validationRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
-      }, 400);
-      return () => clearTimeout(timer);
-    }
-  }, [showValidationForm]);
-
-  // Timeout: if questions missing after analysis, show retry
-  useEffect(() => {
-    if (analysisResult && !hasQuestions && !paymentComplete) {
-      timeoutRef.current = setTimeout(() => setQuestionsTimedOut(true), QUESTIONS_TIMEOUT_MS);
-      return () => clearTimeout(timeoutRef.current);
-    }
-    setQuestionsTimedOut(false);
-  }, [analysisResult, hasQuestions, paymentComplete]);
-
-  const handleAnalysisComplete = (result: CVAnalysisResult, cvText?: string, jdText?: string) => {
-    setAnalysisResult(result);
-    setPaymentComplete(false);
-    setPendingOptimizedResult(null);
-    setQuestionsTimedOut(false);
-    if (cvText) cvTextRef.current = cvText;
-    if (jdText) jdTextRef.current = jdText;
-  };
-
-  const handleRegenerate = useCallback(async () => {
-    if (!cvTextRef.current || !jdTextRef.current) return;
-    setIsRegenerating(true);
-    setQuestionsTimedOut(false);
-    try {
-      const result = await analyzeCv(cvTextRef.current, jdTextRef.current);
-      setAnalysisResult(result);
-    } catch (err: any) {
-      toast({ title: "Error al regenerar", description: err.message || "Intenta de nuevo.", variant: "destructive" });
-      setQuestionsTimedOut(true);
-    } finally {
-      setIsRegenerating(false);
-    }
+    return () => {
+      clearTimeout(timeoutIdRef.current);
+      clearTimeout(retryIdRef.current);
+    };
   }, []);
 
-  const handleValidationSubmit = async (answers: Record<string, string>) => {
-    setIsReanalyzing(true);
-    console.log("[Index] Enviando respuestas de validación...");
-    try {
-      const result = await analyzeCv(cvTextRef.current, jdTextRef.current, answers);
-      console.log("[Index] Resultado recibido:", {
-        hasOptimizedCv: !!result?.optimized_cv,
-        score: result?.analysis?.match_score,
-      });
+  // Auto-scroll to validation form
+  useEffect(() => {
+    if (!showValidationForm) return;
+    const timer = setTimeout(() => {
+      validationRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+    }, 400);
+    return () => clearTimeout(timer);
+  }, [showValidationForm]);
 
-      if (!result?.optimized_cv) {
-        console.warn("[Index] optimized_cv es null — mostrando advertencia");
+  // Smart timeout: silent retry → then show error
+  useEffect(() => {
+    clearTimeout(timeoutIdRef.current);
+    clearTimeout(retryIdRef.current);
+
+    const shouldStartTimer =
+      state.phase === "awaiting_answers" && !hasValidQuestions(state.analysisResult);
+
+    if (!shouldStartTimer) {
+      if (state.questionsTimedOut) {
+        setState((s) => ({ ...s, questionsTimedOut: false }));
+      }
+      return;
+    }
+
+    retryIdRef.current = setTimeout(async () => {
+      if (!cvTextRef.current || !jdTextRef.current) return;
+      try {
+        const result = await analyzeCv(cvTextRef.current, jdTextRef.current);
+        if (isValidAnalysisResult(result) && hasValidQuestions(result)) {
+          setState((s) => ({ ...s, analysisResult: result, questionsTimedOut: false }));
+          return;
+        }
+      } catch {
+        // Silent — let the outer timeout handle the UI
+      }
+
+      timeoutIdRef.current = setTimeout(() => {
+        setState((s) => ({ ...s, questionsTimedOut: true }));
+      }, QUESTIONS_TIMEOUT_MS - SILENT_RETRY_DELAY_MS);
+    }, SILENT_RETRY_DELAY_MS);
+
+    return () => {
+      clearTimeout(timeoutIdRef.current);
+      clearTimeout(retryIdRef.current);
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [state.phase, state.analysisResult]);
+
+  // ── Handlers ──────────────────────────────────────────────────────────────
+
+  const handleAnalysisComplete = useCallback(
+    (result: CVAnalysisResult, cvText?: string, jdText?: string) => {
+      if (!isValidAnalysisResult(result)) {
         toast({
-          title: "CV no generado",
-          description: "La IA no devolvió el CV optimizado. Intenta de nuevo.",
+          title: "Análisis incompleto",
+          description: "La respuesta del servidor no tiene el formato esperado. Intenta de nuevo.",
           variant: "destructive",
         });
         return;
       }
 
-      setPendingOptimizedResult(result);
-      setShowPaymentModal(true);
-    } catch (err: any) {
-      console.error("[Index] Error al recalcular:", err);
-      toast({
-        title: "Error al generar el CV",
-        description: err.message || "Hubo un error al generar el PDF, por favor intenta de nuevo.",
-        variant: "destructive",
-      });
-    } finally {
-      setIsReanalyzing(false);
-    }
-  };
+      if (cvText) cvTextRef.current = cvText;
+      if (jdText) jdTextRef.current = jdText;
 
-  const handlePaymentSuccess = () => {
-    setShowPaymentModal(false);
-    setPaymentComplete(true);
-    if (pendingOptimizedResult) {
-      setAnalysisResult(pendingOptimizedResult);
+      setState({
+        phase: "awaiting_answers",
+        analysisResult: result,
+        stagedResult: null,
+        questionsTimedOut: false,
+        isRegenerating: false,
+      });
+    },
+    [],
+  );
+
+  const handleRegenerate = useCallback(async () => {
+    if (!cvTextRef.current || !jdTextRef.current) return;
+
+    setState((s) => ({ ...s, isRegenerating: true, questionsTimedOut: false }));
+
+    try {
+      const result = await analyzeCv(cvTextRef.current, jdTextRef.current);
+      if (!isValidAnalysisResult(result)) throw new Error("Respuesta del servidor inválida");
+
+      setState((s) => ({
+        ...s,
+        analysisResult: result,
+        isRegenerating: false,
+        questionsTimedOut: !hasValidQuestions(result),
+      }));
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : "Intenta de nuevo.";
+      toast({ title: "Error al regenerar", description: msg, variant: "destructive" });
+      setState((s) => ({ ...s, isRegenerating: false, questionsTimedOut: true }));
     }
+  }, []);
+
+  const handleValidationSubmit = useCallback(async (answers: Record<string, string>) => {
+    setState((s) => ({ ...s, phase: "reanalyzing" }));
+
+    try {
+      const result = await analyzeCv(cvTextRef.current, jdTextRef.current, answers);
+      if (!isValidAnalysisResult(result)) throw new Error("Respuesta del servidor inválida");
+
+      setState((s) => ({ ...s, phase: "pending_payment", stagedResult: result }));
+      setShowPaymentModal(true);
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : "Intenta de nuevo.";
+      toast({ title: "Error al recalcular", description: msg, variant: "destructive" });
+      setState((s) => ({ ...s, phase: "awaiting_answers" }));
+    }
+  }, []);
+
+  const handlePaymentSuccess = useCallback(() => {
+    setShowPaymentModal(false);
+
+    setState((s) => {
+      if (!hasValidOptimizedCV(s.stagedResult)) {
+        toast({
+          title: "Advertencia",
+          description: "El CV optimizado no pudo ser generado correctamente. Intenta de nuevo.",
+          variant: "destructive",
+        });
+        return { ...s, phase: "awaiting_answers" as OptimizationPhase, stagedResult: null };
+      }
+
+      return {
+        ...s,
+        phase: "complete" as OptimizationPhase,
+        analysisResult: s.stagedResult,
+        stagedResult: null,
+      };
+    });
+
     toast({ title: "¡Pago exitoso!", description: "Tu CV Harvard optimizado está listo." });
+
     setTimeout(() => {
       document.getElementById("cv-optimizado")?.scrollIntoView({ behavior: "smooth" });
     }, 300);
-  };
+  }, []);
+
+  const handlePaymentClose = useCallback(() => {
+    setShowPaymentModal(false);
+    setState((s) => ({ ...s, phase: "awaiting_answers" as OptimizationPhase, stagedResult: null }));
+  }, []);
+
+  // ── Render ─────────────────────────────────────────────────────────────────
 
   return (
     <div className="min-h-screen bg-background">
       <Navbar />
       <HeroSection onAnalysisComplete={handleAnalysisComplete} />
+
       <div id="como-funciona">
         <StepFlowSection />
       </div>
-      <div id="resultados">
-        <ResultsSection result={analysisResult} />
 
-        {/* Scroll indicator arrow when validation form is below */}
-        {analysisResult && showValidationForm && (
+      <div id="resultados">
+        {/* Results — isolated so a render crash here doesn't kill the whole page */}
+        <ErrorBoundary name="ResultsSection">
+          <ResultsSection result={state.analysisResult} />
+        </ErrorBoundary>
+
+        {/* Scroll-down hint */}
+        {state.analysisResult && showValidationForm && (
           <div className="flex justify-center -mt-8 pb-4 bg-secondary/40">
             <button
-              onClick={() => validationRef.current?.scrollIntoView({ behavior: "smooth", block: "start" })}
+              onClick={() =>
+                validationRef.current?.scrollIntoView({ behavior: "smooth", block: "start" })
+              }
               className="animate-bounce text-primary/60 hover:text-primary transition-colors"
               aria-label="Ir a preguntas de validación"
             >
@@ -144,49 +326,56 @@ const Index = () => {
           </div>
         )}
 
-        {/* Validation Form — always visible after diagnosis */}
+        {/* Validation Form */}
         {showValidationForm && (
           <div ref={validationRef} className="bg-secondary/40 pb-20">
             <div className="container">
-              <ValidationQuestionsForm
-                questions={analysisResult!.validation_questions}
-                onSubmit={handleValidationSubmit}
-                isSubmitting={isReanalyzing}
-              />
+              <ErrorBoundary name="ValidationForm">
+                <ValidationQuestionsForm
+                  questions={state.analysisResult!.validation_questions}
+                  onSubmit={handleValidationSubmit}
+                  isSubmitting={state.phase === "reanalyzing"}
+                />
+              </ErrorBoundary>
             </div>
           </div>
         )}
 
-        {/* Timeout fallback: retry button */}
-        {analysisResult && !hasQuestions && questionsTimedOut && !paymentComplete && (
-          <div className="bg-secondary/40 pb-20">
-            <div className="container flex flex-col items-center gap-4 pt-8">
-              <p className="text-sm text-muted-foreground text-center max-w-md">
-                No se pudieron cargar las preguntas de optimización. Esto puede ocurrir si el análisis fue incompleto.
-              </p>
-              <Button
-                onClick={handleRegenerate}
-                disabled={isRegenerating}
-                variant="outline"
-                className="gap-2"
-              >
-                {isRegenerating ? (
-                  <Loader2 className="h-4 w-4 animate-spin" />
-                ) : (
-                  <RefreshCw className="h-4 w-4" />
-                )}
-                Re-generar preguntas de optimización
-              </Button>
+        {/* Timeout fallback with manual regenerate */}
+        {state.analysisResult &&
+          !hasValidQuestions(state.analysisResult) &&
+          state.questionsTimedOut &&
+          state.phase === "awaiting_answers" && (
+            <div className="bg-secondary/40 pb-20">
+              <div className="container flex flex-col items-center gap-4 pt-8">
+                <p className="text-sm text-muted-foreground text-center max-w-md">
+                  No se pudieron cargar las preguntas de optimización. Esto puede ocurrir si el
+                  análisis fue incompleto.
+                </p>
+                <Button
+                  onClick={handleRegenerate}
+                  disabled={state.isRegenerating}
+                  variant="outline"
+                  className="gap-2"
+                >
+                  {state.isRegenerating ? (
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                  ) : (
+                    <RefreshCw className="h-4 w-4" />
+                  )}
+                  Re-generar preguntas de optimización
+                </Button>
+              </div>
             </div>
-          </div>
-        )}
+          )}
 
-        {paymentComplete && analysisResult?.optimized_cv != null &&
-          analysisResult.optimized_cv.header != null &&
-          analysisResult.optimized_cv.work_experience != null && (
+        {/* Optimized CV — only rendered when state is 100% complete and validated */}
+        {state.phase === "complete" && hasValidOptimizedCV(state.analysisResult) && (
           <div id="cv-optimizado" className="bg-secondary/40 pb-20">
             <div className="container">
-              <OptimizedCvPreview cv={analysisResult.optimized_cv} />
+              <ErrorBoundary name="OptimizedCvPreview">
+                <OptimizedCvPreview cv={state.analysisResult!.optimized_cv!} />
+              </ErrorBoundary>
             </div>
           </div>
         )}
@@ -194,8 +383,8 @@ const Index = () => {
 
       <PaymentModal
         open={showPaymentModal}
-        projectedScore={pendingOptimizedResult?.analysis.match_score ?? 95}
-        onClose={() => setShowPaymentModal(false)}
+        projectedScore={state.stagedResult?.analysis.match_score ?? 95}
+        onClose={handlePaymentClose}
         onPaymentSuccess={handlePaymentSuccess}
       />
 
