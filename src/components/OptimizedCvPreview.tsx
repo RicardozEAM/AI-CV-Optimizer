@@ -190,7 +190,7 @@ function generatePdf(cv: OptimizedCv) {
     doc.setFontSize(9.5);
     for (const ed of cv.education) {
       checkPage(8);
-      const edLines = doc.splitTextToSize(`• ${ed}`, usable);
+      const edLines = doc.splitTextToSize(`• ${toSafeString(ed)}`, usable);
       doc.text(edLines, margin, y);
       y += edLines.length * 4.5 + 1;
     }
