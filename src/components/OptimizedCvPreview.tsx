@@ -319,7 +319,7 @@ const OptimizedCvPreview = ({ cv }: OptimizedCvPreviewProps) => {
               <div className="grid grid-cols-3 gap-2">
                 {cv.skill_grid.map((skill, i) => (
                   <div key={i} className="rounded-lg bg-secondary/70 px-3 py-2 text-center text-xs font-medium text-foreground">
-                    {skill}
+                    {toSafeString(skill)}
                   </div>
                 ))}
               </div>
