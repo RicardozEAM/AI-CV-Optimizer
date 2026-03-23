@@ -77,12 +77,33 @@ const Index = () => {
 
   const handleValidationSubmit = async (answers: Record<string, string>) => {
     setIsReanalyzing(true);
+    console.log("[Index] Enviando respuestas de validación...");
     try {
       const result = await analyzeCv(cvTextRef.current, jdTextRef.current, answers);
+      console.log("[Index] Resultado recibido:", {
+        hasOptimizedCv: !!result?.optimized_cv,
+        score: result?.analysis?.match_score,
+      });
+
+      if (!result?.optimized_cv) {
+        console.warn("[Index] optimized_cv es null — mostrando advertencia");
+        toast({
+          title: "CV no generado",
+          description: "La IA no devolvió el CV optimizado. Intenta de nuevo.",
+          variant: "destructive",
+        });
+        return;
+      }
+
       setPendingOptimizedResult(result);
       setShowPaymentModal(true);
     } catch (err: any) {
-      toast({ title: "Error al recalcular", description: err.message || "Intenta de nuevo.", variant: "destructive" });
+      console.error("[Index] Error al recalcular:", err);
+      toast({
+        title: "Error al generar el CV",
+        description: err.message || "Hubo un error al generar el PDF, por favor intenta de nuevo.",
+        variant: "destructive",
+      });
     } finally {
       setIsReanalyzing(false);
     }
@@ -160,7 +181,9 @@ const Index = () => {
           </div>
         )}
 
-        {paymentComplete && analysisResult?.optimized_cv && (
+        {paymentComplete && analysisResult?.optimized_cv != null &&
+          analysisResult.optimized_cv.header != null &&
+          analysisResult.optimized_cv.work_experience != null && (
           <div id="cv-optimizado" className="bg-secondary/40 pb-20">
             <div className="container">
               <OptimizedCvPreview cv={analysisResult.optimized_cv} />

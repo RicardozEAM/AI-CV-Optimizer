@@ -57,12 +57,14 @@ function buildPlainText(cv: OptimizedCv): string {
 function generatePdf(cv: OptimizedCv) {
   const doc = new jsPDF({ unit: "mm", format: "a4" });
   const pageW = doc.internal.pageSize.getWidth();
+  const pageH = doc.internal.pageSize.getHeight();
   const margin = 25;
   const usable = pageW - margin * 2;
+  const bottomMargin = pageH - 20;
   let y = margin;
 
   const addPage = () => { doc.addPage(); y = margin; };
-  const checkPage = (needed: number) => { if (y + needed > 280) addPage(); };
+  const checkPage = (needed: number) => { if (y + needed > bottomMargin) addPage(); };
 
   // Header
   doc.setFont("helvetica", "bold");
@@ -192,17 +194,46 @@ function generatePdf(cv: OptimizedCv) {
 
 const OptimizedCvPreview = ({ cv }: OptimizedCvPreviewProps) => {
   const [copied, setCopied] = useState(false);
+  const [pdfError, setPdfError] = useState<string | null>(null);
+
+  console.log("[OptimizedCvPreview] Renderizando CV:", {
+    name: cv?.header?.full_name,
+    skills: cv?.skill_grid?.length,
+    jobs: cv?.work_experience?.length,
+  });
+
+  if (!cv || !cv.header || !cv.work_experience) {
+    return (
+      <div className="mx-auto max-w-5xl mt-8 p-8 text-center">
+        <p className="text-destructive font-medium">No se pudo cargar el CV optimizado. Intenta de nuevo.</p>
+      </div>
+    );
+  }
 
   const handleCopy = async () => {
-    await navigator.clipboard.writeText(buildPlainText(cv));
-    setCopied(true);
-    toast({ title: "Copiado", description: "El CV se copió al portapapeles." });
-    setTimeout(() => setCopied(false), 2000);
+    try {
+      await navigator.clipboard.writeText(buildPlainText(cv));
+      setCopied(true);
+      toast({ title: "Copiado", description: "El CV se copió al portapapeles." });
+      setTimeout(() => setCopied(false), 2000);
+    } catch (err) {
+      console.error("[OptimizedCvPreview] Error al copiar:", err);
+      toast({ title: "Error", description: "No se pudo copiar al portapapeles.", variant: "destructive" });
+    }
   };
 
   const handleDownload = () => {
-    generatePdf(cv);
-    toast({ title: "Descargado", description: "Tu CV se descargó como PDF." });
+    setPdfError(null);
+    try {
+      console.log("[OptimizedCvPreview] Generando PDF...");
+      generatePdf(cv);
+      console.log("[OptimizedCvPreview] PDF generado exitosamente");
+      toast({ title: "Descargado", description: "Tu CV se descargó como PDF." });
+    } catch (err) {
+      console.error("[OptimizedCvPreview] Error al generar PDF:", err);
+      setPdfError("Hubo un error al generar el PDF, por favor intenta de nuevo.");
+      toast({ title: "Error", description: "Hubo un error al generar el PDF, por favor intenta de nuevo.", variant: "destructive" });
+    }
   };
 
   const h = cv.header;
@@ -230,6 +261,9 @@ const OptimizedCvPreview = ({ cv }: OptimizedCvPreviewProps) => {
               Descargar PDF
             </Button>
           </div>
+          {pdfError && (
+            <p className="text-xs text-destructive mt-2">{pdfError}</p>
+          )}
         </div>
 
         {/* CV Preview */}
@@ -254,7 +288,7 @@ const OptimizedCvPreview = ({ cv }: OptimizedCvPreviewProps) => {
           <p className="text-sm text-foreground leading-relaxed">{cv.summary}</p>
 
           {/* Skill Grid 4x3 */}
-          {cv.skill_grid.length > 0 && (
+          {Array.isArray(cv.skill_grid) && cv.skill_grid.length > 0 && (
             <div className="mt-5">
               <h3 className="text-xs font-bold uppercase tracking-wider text-muted-foreground mb-3">Competencias Clave</h3>
               <div className="grid grid-cols-3 gap-2">
@@ -286,7 +320,7 @@ const OptimizedCvPreview = ({ cv }: OptimizedCvPreviewProps) => {
           </div>
 
           {/* Education */}
-          {cv.education.length > 0 && (
+          {Array.isArray(cv.education) && cv.education.length > 0 && (
             <div className="mt-5">
               <h3 className="text-xs font-bold uppercase tracking-wider text-muted-foreground mb-2">Educación</h3>
               <ul className="space-y-1">
@@ -298,7 +332,7 @@ const OptimizedCvPreview = ({ cv }: OptimizedCvPreviewProps) => {
           )}
 
           {/* Certifications */}
-          {cv.certifications.length > 0 && (
+          {Array.isArray(cv.certifications) && cv.certifications.length > 0 && (
             <div className="mt-5">
               <h3 className="text-xs font-bold uppercase tracking-wider text-muted-foreground mb-2">Certificaciones</h3>
               <ul className="space-y-1">
