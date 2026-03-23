@@ -318,7 +318,7 @@ const OptimizedCvPreview = ({ cv }: OptimizedCvPreviewProps) => {
           </div>
 
           {/* Education */}
-          {cv.education.length > 0 && (
+          {Array.isArray(cv.education) && cv.education.length > 0 && (
             <div className="mt-5">
               <h3 className="text-xs font-bold uppercase tracking-wider text-muted-foreground mb-2">Educación</h3>
               <ul className="space-y-1">
