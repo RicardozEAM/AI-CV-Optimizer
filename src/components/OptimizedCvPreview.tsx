@@ -192,17 +192,46 @@ function generatePdf(cv: OptimizedCv) {
 
 const OptimizedCvPreview = ({ cv }: OptimizedCvPreviewProps) => {
   const [copied, setCopied] = useState(false);
+  const [pdfError, setPdfError] = useState<string | null>(null);
+
+  console.log("[OptimizedCvPreview] Renderizando CV:", {
+    name: cv?.header?.full_name,
+    skills: cv?.skill_grid?.length,
+    jobs: cv?.work_experience?.length,
+  });
+
+  if (!cv || !cv.header || !cv.work_experience) {
+    return (
+      <div className="mx-auto max-w-5xl mt-8 p-8 text-center">
+        <p className="text-destructive font-medium">No se pudo cargar el CV optimizado. Intenta de nuevo.</p>
+      </div>
+    );
+  }
 
   const handleCopy = async () => {
-    await navigator.clipboard.writeText(buildPlainText(cv));
-    setCopied(true);
-    toast({ title: "Copiado", description: "El CV se copió al portapapeles." });
-    setTimeout(() => setCopied(false), 2000);
+    try {
+      await navigator.clipboard.writeText(buildPlainText(cv));
+      setCopied(true);
+      toast({ title: "Copiado", description: "El CV se copió al portapapeles." });
+      setTimeout(() => setCopied(false), 2000);
+    } catch (err) {
+      console.error("[OptimizedCvPreview] Error al copiar:", err);
+      toast({ title: "Error", description: "No se pudo copiar al portapapeles.", variant: "destructive" });
+    }
   };
 
   const handleDownload = () => {
-    generatePdf(cv);
-    toast({ title: "Descargado", description: "Tu CV se descargó como PDF." });
+    setPdfError(null);
+    try {
+      console.log("[OptimizedCvPreview] Generando PDF...");
+      generatePdf(cv);
+      console.log("[OptimizedCvPreview] PDF generado exitosamente");
+      toast({ title: "Descargado", description: "Tu CV se descargó como PDF." });
+    } catch (err) {
+      console.error("[OptimizedCvPreview] Error al generar PDF:", err);
+      setPdfError("Hubo un error al generar el PDF, por favor intenta de nuevo.");
+      toast({ title: "Error", description: "Hubo un error al generar el PDF, por favor intenta de nuevo.", variant: "destructive" });
+    }
   };
 
   const h = cv.header;
