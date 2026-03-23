@@ -5,6 +5,31 @@ import { toast } from "@/hooks/use-toast";
 import type { OptimizedCv } from "@/lib/types";
 import jsPDF from "jspdf";
 
+/**
+ * Safely converts any value to a displayable string.
+ * Handles the case where the AI returns objects instead of plain strings
+ * (e.g. { institution: "...", degree: "...", period: "..." }).
+ */
+function toSafeString(value: unknown): string {
+  if (typeof value === "string") return value;
+  if (value === null || value === undefined) return "";
+  if (typeof value === "number" || typeof value === "boolean") return String(value);
+  if (typeof value === "object") {
+    const obj = value as Record<string, unknown>;
+    // Try common field names first
+    const preferred = obj.institution ?? obj.degree ?? obj.name ?? obj.title ?? obj.text ?? obj.description;
+    if (typeof preferred === "string") {
+      // Build a composite string from known fields
+      const parts = [obj.degree, obj.institution, obj.period].filter(
+        (v) => typeof v === "string" && v.length > 0
+      );
+      return parts.length > 0 ? parts.join(" — ") : preferred;
+    }
+    return JSON.stringify(value);
+  }
+  return String(value);
+}
+
 interface OptimizedCvPreviewProps {
   cv: OptimizedCv;
 }
