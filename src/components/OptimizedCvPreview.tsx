@@ -67,7 +67,7 @@ function buildPlainText(cv: OptimizedCv): string {
 
   if (cv.education.length > 0) {
     lines.push("EDUCACIÓN");
-    for (const ed of cv.education) lines.push(`• ${ed}`);
+    for (const ed of cv.education) lines.push(`• ${toSafeString(ed)}`);
     lines.push("");
   }
 
