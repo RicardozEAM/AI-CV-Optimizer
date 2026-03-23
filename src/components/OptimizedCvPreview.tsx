@@ -336,7 +336,7 @@ const OptimizedCvPreview = ({ cv }: OptimizedCvPreviewProps) => {
                 <ul className="mt-1.5 space-y-1">
                   {job.achievements.map((a, j) => (
                     <li key={j} className="text-sm text-foreground leading-relaxed pl-3 relative before:content-['•'] before:absolute before:left-0 before:text-muted-foreground">
-                      {a}
+                      {toSafeString(a)}
                     </li>
                   ))}
                 </ul>
