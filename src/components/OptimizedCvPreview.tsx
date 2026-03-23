@@ -259,6 +259,9 @@ const OptimizedCvPreview = ({ cv }: OptimizedCvPreviewProps) => {
               Descargar PDF
             </Button>
           </div>
+          {pdfError && (
+            <p className="text-xs text-destructive mt-2">{pdfError}</p>
+          )}
         </div>
 
         {/* CV Preview */}
