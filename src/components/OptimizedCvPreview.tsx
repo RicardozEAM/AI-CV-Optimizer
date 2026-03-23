@@ -286,7 +286,7 @@ const OptimizedCvPreview = ({ cv }: OptimizedCvPreviewProps) => {
           <p className="text-sm text-foreground leading-relaxed">{cv.summary}</p>
 
           {/* Skill Grid 4x3 */}
-          {cv.skill_grid.length > 0 && (
+          {Array.isArray(cv.skill_grid) && cv.skill_grid.length > 0 && (
             <div className="mt-5">
               <h3 className="text-xs font-bold uppercase tracking-wider text-muted-foreground mb-3">Competencias Clave</h3>
               <div className="grid grid-cols-3 gap-2">
