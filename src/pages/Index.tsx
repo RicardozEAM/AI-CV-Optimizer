@@ -104,7 +104,7 @@ function isValidAnalysisResult(result: unknown): result is CVAnalysisResult {
 
 function hasValidOptimizedCV(result: CVAnalysisResult | null): boolean {
   if (!result?.optimized_cv) return false;
-  const cv = result.optimized_cv as Record<string, unknown>;
+  const cv = result.optimized_cv;
   return !!(cv.header && cv.summary && Array.isArray(cv.work_experience));
 }
 
