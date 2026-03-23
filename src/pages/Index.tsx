@@ -181,7 +181,9 @@ const Index = () => {
           </div>
         )}
 
-        {paymentComplete && analysisResult?.optimized_cv && (
+        {paymentComplete && analysisResult?.optimized_cv != null &&
+          analysisResult.optimized_cv.header != null &&
+          analysisResult.optimized_cv.work_experience != null && (
           <div id="cv-optimizado" className="bg-secondary/40 pb-20">
             <div className="container">
               <OptimizedCvPreview cv={analysisResult.optimized_cv} />

@@ -57,12 +57,14 @@ function buildPlainText(cv: OptimizedCv): string {
 function generatePdf(cv: OptimizedCv) {
   const doc = new jsPDF({ unit: "mm", format: "a4" });
   const pageW = doc.internal.pageSize.getWidth();
+  const pageH = doc.internal.pageSize.getHeight();
   const margin = 25;
   const usable = pageW - margin * 2;
+  const bottomMargin = pageH - 20;
   let y = margin;
 
   const addPage = () => { doc.addPage(); y = margin; };
-  const checkPage = (needed: number) => { if (y + needed > 280) addPage(); };
+  const checkPage = (needed: number) => { if (y + needed > bottomMargin) addPage(); };
 
   // Header
   doc.setFont("helvetica", "bold");
