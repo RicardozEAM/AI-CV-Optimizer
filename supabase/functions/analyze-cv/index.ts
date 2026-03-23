@@ -1,10 +1,14 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 
-const corsHeaders = {
+// ─── Constants ────────────────────────────────────────────────────────────────
+
+const CORS_HEADERS: Record<string, string> = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers":
     "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
 };
+
+const JSON_RESPONSE_HEADERS = { ...CORS_HEADERS, "Content-Type": "application/json" };
 
 const SYSTEM_PROMPT = `SYSTEM PROMPT — ATS CV OPTIMIZER & HARVARD GENERATOR V2.0
 
@@ -83,24 +87,225 @@ AJUSTE DE PENALIZACION POR CARACTERES ESPECIALES: Los caracteres como pipes (|),
 
 REGLA ABSOLUTA — NO INVENCION: Jamas inferiras, supondras ni inventaras informacion del candidato. Si una metrica, logro o tecnologia no aparece explicitamente en el CV, marca el gap como ausente.`;
 
-serve(async (req) => {
-  if (req.method === "OPTIONS") {
-    return new Response(null, { headers: corsHeaders });
-  }
+// ─── Logger ───────────────────────────────────────────────────────────────────
+
+const log = {
+  info: (stage: string, msg: string, meta?: unknown) =>
+    console.log(JSON.stringify({ level: "INFO", stage, msg, ...(meta ? { meta } : {}), ts: new Date().toISOString() })),
+  warn: (stage: string, msg: string, meta?: unknown) =>
+    console.warn(JSON.stringify({ level: "WARN", stage, msg, ...(meta ? { meta } : {}), ts: new Date().toISOString() })),
+  error: (stage: string, msg: string, meta?: unknown) =>
+    console.error(JSON.stringify({ level: "ERROR", stage, msg, ...(meta ? { meta } : {}), ts: new Date().toISOString() })),
+};
+
+// ─── JSON Sanitizer ───────────────────────────────────────────────────────────
+
+function sanitizeAndParseJSON(raw: string): unknown {
+  const trimmed = raw.trim();
 
   try {
-    const { cv_text, jd_text, candidate_answers } = await req.json();
+    return JSON.parse(trimmed);
+  } catch {
+    log.warn("json_sanitizer", "Direct parse failed, trying fence strip");
+  }
 
-    if (!cv_text || !jd_text) {
-      return new Response(
-        JSON.stringify({ error: "cv_text y jd_text son requeridos" }),
-        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-      );
+  const fenceStripped = trimmed
+    .replace(/^```(?:json)?\s*/i, "")
+    .replace(/\s*```$/i, "")
+    .trim();
+
+  try {
+    return JSON.parse(fenceStripped);
+  } catch {
+    log.warn("json_sanitizer", "Fence-stripped parse failed, trying regex extraction");
+  }
+
+  const match = fenceStripped.match(/(\{[\s\S]*\})/);
+  if (match?.[1]) {
+    try {
+      return JSON.parse(match[1]);
+    } catch {
+      log.warn("json_sanitizer", "Regex extraction parse failed, attempting light repair");
     }
 
-    const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
-    if (!LOVABLE_API_KEY) {
-      throw new Error("LOVABLE_API_KEY is not configured");
+    const repaired = match[1]
+      .replace(/,\s*([}\]])/g, "$1")
+      .replace(/([{,]\s*)(\w+)\s*:/g, '$1"$2":')
+      .replace(/:\s*'([^']*)'/g, ': "$1"');
+
+    try {
+      return JSON.parse(repaired);
+    } catch (err) {
+      log.error("json_sanitizer", "All repair strategies exhausted", {
+        repaired_preview: repaired.slice(0, 300),
+        error: String(err),
+      });
+    }
+  }
+
+  throw new SyntaxError(`JSON extraction failed. Raw preview: ${trimmed.slice(0, 200)}`);
+}
+
+// ─── Validators ───────────────────────────────────────────────────────────────
+
+function isNonEmptyString(v: unknown): v is string {
+  return typeof v === "string" && v.trim().length > 0;
+}
+
+function validateRequestBody(body: unknown): { cv_text: string; jd_text: string; candidate_answers?: unknown } {
+  if (!body || typeof body !== "object") {
+    throw new TypeError("Request body must be a JSON object");
+  }
+
+  const b = body as Record<string, unknown>;
+
+  if (!isNonEmptyString(b.cv_text)) {
+    throw new TypeError("cv_text is required and must be a non-empty string");
+  }
+  if (!isNonEmptyString(b.jd_text)) {
+    throw new TypeError("jd_text is required and must be a non-empty string");
+  }
+
+  return {
+    cv_text: b.cv_text,
+    jd_text: b.jd_text,
+    candidate_answers: b.candidate_answers,
+  };
+}
+
+function normalizeAIResult(raw: unknown): Record<string, unknown> {
+  if (!raw || typeof raw !== "object") {
+    throw new TypeError("AI result is not an object");
+  }
+
+  const r = raw as Record<string, unknown>;
+
+  if (!r.analysis || typeof r.analysis !== "object") {
+    log.warn("normalizer", "Missing 'analysis' block — injecting default");
+    r.analysis = {};
+  }
+  const analysis = r.analysis as Record<string, unknown>;
+  if (typeof analysis.match_score !== "number") analysis.match_score = 0;
+  if (!Array.isArray(analysis.keywords_detected)) analysis.keywords_detected = [];
+  if (!Array.isArray(analysis.keywords_missing)) analysis.keywords_missing = [];
+  if (!Array.isArray(analysis.structure_alerts)) analysis.structure_alerts = [];
+  if (!analysis.scoring_details || typeof analysis.scoring_details !== "object") {
+    analysis.scoring_details = { keywords: 0, experience: 0, structure: 0 };
+  }
+
+  if (!Array.isArray(r.validation_questions) || (r.validation_questions as unknown[]).length === 0) {
+    log.warn("normalizer", "Empty or missing validation_questions — injecting fallback");
+    r.validation_questions = [
+      { id: 1, question: "¿Cuál fue tu mayor logro técnico en tu último cargo? (ej. 'Reduje el tiempo de deployment de 2h a 15min')", context: "Logro técnico cuantificable" },
+      { id: 2, question: "¿Lideraste algún equipo o proyecto? Describe el scope y resultado. (ej. 'Coordiné equipo de 4 personas, entregamos en tiempo y 10% bajo presupuesto')", context: "Scope de liderazgo" },
+      { id: 3, question: "¿Qué impacto de negocio generó tu trabajo más relevante? (ej. 'Automaticé proceso que ahorró $50K anuales')", context: "Resultado de negocio" },
+    ];
+  }
+
+  if (r.optimized_cv === undefined) r.optimized_cv = null;
+
+  return r;
+}
+
+// ─── HTTP Helpers ─────────────────────────────────────────────────────────────
+
+function jsonResponse(body: unknown, status = 200): Response {
+  return new Response(JSON.stringify(body), { status, headers: JSON_RESPONSE_HEADERS });
+}
+
+function errorResponse(message: string, status: number): Response {
+  log.error("http", `Responding ${status}`, { message });
+  return jsonResponse({ error: message }, status);
+}
+
+// ─── AI Gateway ───────────────────────────────────────────────────────────────
+
+async function callAIGateway(userPrompt: string, apiKey: string): Promise<string> {
+  log.info("ai_gateway", "Sending request", { prompt_length: userPrompt.length });
+
+  const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${apiKey}`,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      model: "google/gemini-3-flash-preview",
+      messages: [
+        { role: "system", content: SYSTEM_PROMPT },
+        { role: "user", content: userPrompt },
+      ],
+    }),
+  });
+
+  log.info("ai_gateway", "Response received", { status: response.status });
+
+  if (!response.ok) {
+    const errText = await response.text().catch(() => "(unreadable body)");
+    log.error("ai_gateway", "Non-2xx response", { status: response.status, body_preview: errText.slice(0, 400) });
+
+    if (response.status === 429) throw Object.assign(new Error("rate_limited"), { httpStatus: 429 });
+    if (response.status === 402) throw Object.assign(new Error("payment_required"), { httpStatus: 402 });
+
+    throw Object.assign(
+      new Error(`AI gateway returned ${response.status}: ${errText.slice(0, 200)}`),
+      { httpStatus: 502 },
+    );
+  }
+
+  const data = await response.json();
+  const rawContent: unknown = data?.choices?.[0]?.message?.content;
+
+  log.info("ai_gateway", "Content extracted", {
+    content_type: typeof rawContent,
+    content_length: typeof rawContent === "string" ? rawContent.length : null,
+    content_preview: typeof rawContent === "string" ? rawContent.slice(0, 200) : rawContent,
+  });
+
+  if (!isNonEmptyString(rawContent)) {
+    log.error("ai_gateway", "Empty or missing content in response", { choices: data?.choices });
+    throw new Error("AI response contained no usable content");
+  }
+
+  return rawContent;
+}
+
+// ─── Main Handler ─────────────────────────────────────────────────────────────
+
+serve(async (req: Request): Promise<Response> => {
+  if (req.method === "OPTIONS") {
+    return new Response(null, { headers: CORS_HEADERS });
+  }
+
+  const requestId = crypto.randomUUID().slice(0, 8);
+  log.info("handler", `Request received [${requestId}]`, { method: req.method });
+
+  try {
+    let body: unknown;
+    try {
+      body = await req.json();
+    } catch (err) {
+      log.warn("handler", "Failed to parse request body as JSON", { error: String(err) });
+      return errorResponse("Request body must be valid JSON", 400);
+    }
+
+    let cv_text: string, jd_text: string, candidate_answers: unknown;
+    try {
+      ({ cv_text, jd_text, candidate_answers } = validateRequestBody(body));
+    } catch (err) {
+      return errorResponse(err instanceof Error ? err.message : "Invalid request body", 400);
+    }
+
+    log.info("handler", "Input validated", {
+      cv_length: cv_text.length,
+      jd_length: jd_text.length,
+      has_answers: !!candidate_answers,
+    });
+
+    const apiKey = Deno.env.get("LOVABLE_API_KEY");
+    if (!apiKey) {
+      log.error("handler", "LOVABLE_API_KEY env var is not set");
+      return errorResponse("Server configuration error: missing API key", 500);
     }
 
     let userPrompt = `CV_TEXT:\n${cv_text}\n\nJD_TEXT:\n${jd_text}`;
@@ -108,62 +313,52 @@ serve(async (req) => {
       userPrompt += `\n\nCANDIDATE_ANSWERS:\n${JSON.stringify(candidate_answers)}`;
     }
 
-    const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${LOVABLE_API_KEY}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        model: "google/gemini-3-flash-preview",
-        messages: [
-          { role: "system", content: SYSTEM_PROMPT },
-          { role: "user", content: userPrompt },
-        ],
-      }),
-    });
-
-    if (!response.ok) {
-      if (response.status === 429) {
-        return new Response(
-          JSON.stringify({ error: "Demasiadas solicitudes. Intenta en unos segundos." }),
-          { status: 429, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-        );
+    let rawContent: string;
+    try {
+      rawContent = await callAIGateway(userPrompt, apiKey);
+    } catch (err) {
+      const e = err as Error & { httpStatus?: number };
+      if (e.message === "rate_limited") {
+        return errorResponse("Demasiadas solicitudes. Intenta en unos segundos.", 429);
       }
-      if (response.status === 402) {
-        return new Response(
-          JSON.stringify({ error: "Créditos agotados. Agrega fondos en Settings > Workspace > Usage." }),
-          { status: 402, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-        );
+      if (e.message === "payment_required") {
+        return errorResponse("Créditos agotados. Agrega fondos en Settings > Workspace > Usage.", 402);
       }
-      const errText = await response.text();
-      console.error("AI gateway error:", response.status, errText);
-      throw new Error(`AI gateway error: ${response.status}`);
+      return errorResponse(`Error al contactar el servicio de IA: ${e.message}`, e.httpStatus ?? 502);
     }
 
-    const data = await response.json();
-    const rawContent = data.choices?.[0]?.message?.content;
+    log.info("handler", "Sanitizing AI response JSON", { raw_length: rawContent.length });
 
-    if (!rawContent) {
-      throw new Error("No content in AI response");
+    let parsedResult: unknown;
+    try {
+      parsedResult = sanitizeAndParseJSON(rawContent);
+    } catch (err) {
+      log.error("handler", "JSON sanitization failed", {
+        error: String(err),
+        raw_preview: rawContent.slice(0, 500),
+      });
+      return errorResponse(
+        "La IA devolvió una respuesta en formato inválido. Intenta de nuevo.",
+        500,
+      );
     }
 
-    let jsonStr = rawContent.trim();
-    if (jsonStr.startsWith("```")) {
-      jsonStr = jsonStr.replace(/^```(?:json)?\n?/, "").replace(/\n?```$/, "");
+    let normalizedResult: Record<string, unknown>;
+    try {
+      normalizedResult = normalizeAIResult(parsedResult);
+    } catch (err) {
+      log.error("handler", "Normalization failed", { error: String(err) });
+      return errorResponse("Error al procesar la respuesta del análisis.", 500);
     }
 
-    const analysisResult = JSON.parse(jsonStr);
-
-    return new Response(JSON.stringify(analysisResult), {
-      headers: { ...corsHeaders, "Content-Type": "application/json" },
+    log.info("handler", `Request [${requestId}] completed successfully`, {
+      match_score: (normalizedResult.analysis as Record<string, unknown>)?.match_score,
+      has_cv: normalizedResult.optimized_cv !== null,
     });
-  } catch (e) {
-    console.error("analyze-cv error:", e);
-    const msg = e instanceof Error ? e.message : "Error desconocido";
-    return new Response(JSON.stringify({ error: msg }), {
-      status: 500,
-      headers: { ...corsHeaders, "Content-Type": "application/json" },
-    });
+
+    return jsonResponse(normalizedResult);
+  } catch (err) {
+    log.error("handler", "Unhandled exception", { error: String(err) });
+    return errorResponse("Error interno inesperado. Por favor intenta de nuevo.", 500);
   }
 });
