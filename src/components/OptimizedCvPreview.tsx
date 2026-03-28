@@ -221,11 +221,13 @@ const OptimizedCvPreview = ({ cv }: OptimizedCvPreviewProps) => {
   const [copied, setCopied] = useState(false);
   const [pdfError, setPdfError] = useState<string | null>(null);
 
-  console.log("[OptimizedCvPreview] Renderizando CV:", {
-    name: cv?.header?.full_name,
-    skills: cv?.skill_grid?.length,
-    jobs: cv?.work_experience?.length,
-  });
+  if (import.meta.env.DEV) {
+    console.log("[OptimizedCvPreview] Renderizando CV:", {
+      name: cv?.header?.full_name,
+      skills: cv?.skill_grid?.length,
+      jobs: cv?.work_experience?.length,
+    });
+  }
 
   if (!cv || !cv.header || !cv.work_experience) {
     return (
