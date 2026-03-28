@@ -124,7 +124,6 @@ const Index = () => {
     questionsTimedOut: false,
     isRegenerating: false,
   });
-  
 
   const cvTextRef = useRef("");
   const jdTextRef = useRef("");
