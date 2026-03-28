@@ -363,7 +363,6 @@ const Index = () => {
         )}
       </div>
 
-
       <footer className="border-t py-8">
         <div className="container text-center text-sm text-muted-foreground">
           © 2026 CVOptimizer · Optimiza tu CV con IA
