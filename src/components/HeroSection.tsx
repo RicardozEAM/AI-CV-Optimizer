@@ -16,6 +16,8 @@ const ACCEPTED_TYPES = [
   "application/msword",
 ];
 
+const MAX_FILE_SIZE_MB = 5;
+
 const HeroSection = ({ onAnalysisComplete }: HeroSectionProps) => {
   const [file, setFile] = useState<File | null>(null);
   const [isDragging, setIsDragging] = useState(false);
