@@ -10,6 +10,59 @@ const CORS_HEADERS: Record<string, string> = {
 
 const JSON_RESPONSE_HEADERS = { ...CORS_HEADERS, "Content-Type": "application/json" };
 
+async function checkRateLimit(ip: string): Promise<boolean> {
+  const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
+  const supabaseKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
+
+  const today = new Date().toISOString().split("T")[0];
+
+  const res = await fetch(
+    `${supabaseUrl}/rest/v1/rate_limits?ip=eq.${encodeURIComponent(ip)}&window_date=eq.${today}`,
+    {
+      headers: {
+        apikey: supabaseKey,
+        Authorization: `Bearer ${supabaseKey}`,
+        "Content-Type": "application/json",
+      },
+    }
+  );
+
+  const rows = await res.json();
+  const current = rows?.[0];
+
+  if (!current) {
+    await fetch(`${supabaseUrl}/rest/v1/rate_limits`, {
+      method: "POST",
+      headers: {
+        apikey: supabaseKey,
+        Authorization: `Bearer ${supabaseKey}`,
+        "Content-Type": "application/json",
+        Prefer: "return=minimal",
+      },
+      body: JSON.stringify({ ip, count: 1, window_date: today }),
+    });
+    return true;
+  }
+
+  if (current.count >= 5) return false;
+
+  await fetch(
+    `${supabaseUrl}/rest/v1/rate_limits?ip=eq.${encodeURIComponent(ip)}&window_date=eq.${today}`,
+    {
+      method: "PATCH",
+      headers: {
+        apikey: supabaseKey,
+        Authorization: `Bearer ${supabaseKey}`,
+        "Content-Type": "application/json",
+        Prefer: "return=minimal",
+      },
+      body: JSON.stringify({ count: current.count + 1 }),
+    }
+  );
+
+  return true;
+}
+
 const SYSTEM_PROMPT = `SYSTEM PROMPT — ATS CV OPTIMIZER & HARVARD GENERATOR V2.0
 
 CONTEXTO TEMPORAL:
