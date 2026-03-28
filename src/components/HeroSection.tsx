@@ -34,12 +34,27 @@ const HeroSection = ({ onAnalysisComplete }: HeroSectionProps) => {
     e.preventDefault();
     setIsDragging(false);
     const dropped = e.dataTransfer.files[0];
-    if (dropped && isValidFile(dropped)) setFile(dropped);
+    if (!dropped) return;
+    if (!isValidFile(dropped)) {
+      toast({ title: "Formato no válido", description: "Solo se aceptan archivos PDF o DOCX.", variant: "destructive" });
+      return;
+    }
+    if (dropped.size > MAX_FILE_SIZE_MB * 1024 * 1024) {
+      toast({ title: "Archivo muy grande", description: `El archivo no debe superar ${MAX_FILE_SIZE_MB}MB.`, variant: "destructive" });
+      return;
+    }
+    setFile(dropped);
   };
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const selected = e.target.files?.[0];
-    if (selected) setFile(selected);
+    if (!selected) return;
+    if (selected.size > MAX_FILE_SIZE_MB * 1024 * 1024) {
+      toast({ title: "Archivo muy grande", description: `El archivo no debe superar ${MAX_FILE_SIZE_MB}MB.`, variant: "destructive" });
+      e.target.value = "";
+      return;
+    }
+    setFile(selected);
   };
 
   const handleAnalyze = async () => {
