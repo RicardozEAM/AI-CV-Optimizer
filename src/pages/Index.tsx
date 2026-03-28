@@ -12,7 +12,6 @@ import HeroSection from "@/components/HeroSection";
 import StepFlowSection from "@/components/StepFlowSection";
 import ResultsSection from "@/components/ResultsSection";
 import ValidationQuestionsForm from "@/components/ValidationQuestionsForm";
-
 import OptimizedCvPreview from "@/components/OptimizedCvPreview";
 import type { CVAnalysisResult } from "@/lib/types";
 import { analyzeCv } from "@/lib/analyze-cv";
