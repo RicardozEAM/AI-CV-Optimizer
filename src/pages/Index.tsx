@@ -365,12 +365,6 @@ const Index = () => {
         )}
       </div>
 
-      <PaymentModal
-        open={showPaymentModal}
-        projectedScore={state.stagedResult?.analysis.match_score ?? 95}
-        onClose={handlePaymentClose}
-        onPaymentSuccess={handlePaymentSuccess}
-      />
 
       <footer className="border-t py-8">
         <div className="container text-center text-sm text-muted-foreground">
