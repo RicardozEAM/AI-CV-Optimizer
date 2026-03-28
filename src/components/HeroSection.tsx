@@ -76,9 +76,10 @@ const HeroSection = ({ onAnalysisComplete }: HeroSectionProps) => {
       setTimeout(() => {
         document.getElementById("resultados")?.scrollIntoView({ behavior: "smooth" });
       }, 200);
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error("Analysis error:", err);
-      toast({ title: "Error en el análisis", description: err.message || "Intenta de nuevo.", variant: "destructive" });
+      const msg = err instanceof Error ? err.message : "Intenta de nuevo.";
+      toast({ title: "Error en el análisis", description: msg, variant: "destructive" });
     } finally {
       setIsAnalyzing(false);
     }
