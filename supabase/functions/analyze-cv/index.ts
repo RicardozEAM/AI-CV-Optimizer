@@ -10,6 +10,59 @@ const CORS_HEADERS: Record<string, string> = {
 
 const JSON_RESPONSE_HEADERS = { ...CORS_HEADERS, "Content-Type": "application/json" };
 
+async function checkRateLimit(ip: string): Promise<boolean> {
+  const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
+  const supabaseKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
+
+  const today = new Date().toISOString().split("T")[0];
+
+  const res = await fetch(
+    `${supabaseUrl}/rest/v1/rate_limits?ip=eq.${encodeURIComponent(ip)}&window_date=eq.${today}`,
+    {
+      headers: {
+        apikey: supabaseKey,
+        Authorization: `Bearer ${supabaseKey}`,
+        "Content-Type": "application/json",
+      },
+    }
+  );
+
+  const rows = await res.json();
+  const current = rows?.[0];
+
+  if (!current) {
+    await fetch(`${supabaseUrl}/rest/v1/rate_limits`, {
+      method: "POST",
+      headers: {
+        apikey: supabaseKey,
+        Authorization: `Bearer ${supabaseKey}`,
+        "Content-Type": "application/json",
+        Prefer: "return=minimal",
+      },
+      body: JSON.stringify({ ip, count: 1, window_date: today }),
+    });
+    return true;
+  }
+
+  if (current.count >= 5) return false;
+
+  await fetch(
+    `${supabaseUrl}/rest/v1/rate_limits?ip=eq.${encodeURIComponent(ip)}&window_date=eq.${today}`,
+    {
+      method: "PATCH",
+      headers: {
+        apikey: supabaseKey,
+        Authorization: `Bearer ${supabaseKey}`,
+        "Content-Type": "application/json",
+        Prefer: "return=minimal",
+      },
+      body: JSON.stringify({ count: current.count + 1 }),
+    }
+  );
+
+  return true;
+}
+
 const SYSTEM_PROMPT = `SYSTEM PROMPT — ATS CV OPTIMIZER & HARVARD GENERATOR V2.0
 
 CONTEXTO TEMPORAL:
@@ -277,6 +330,20 @@ async function callAIGateway(userPrompt: string, apiKey: string): Promise<string
 serve(async (req: Request): Promise<Response> => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: CORS_HEADERS });
+  }
+
+  const ip =
+    req.headers.get("x-forwarded-for")?.split(",")[0].trim() ??
+    req.headers.get("x-real-ip") ??
+    "unknown";
+
+  try {
+    const allowed = await checkRateLimit(ip);
+    if (!allowed) {
+      return errorResponse("Has alcanzado el límite de 5 análisis por día. Intenta mañana.", 429);
+    }
+  } catch (err) {
+    log.warn("rate_limit", "Rate limit check failed, allowing request", { error: String(err) });
   }
 
   const requestId = crypto.randomUUID().slice(0, 8);
