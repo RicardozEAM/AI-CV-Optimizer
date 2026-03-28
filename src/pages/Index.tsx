@@ -32,7 +32,6 @@ type OptimizationPhase =
   | "analyzing"
   | "awaiting_answers"
   | "reanalyzing"
-  | "pending_payment"
   | "complete";
 
 interface AppState {
