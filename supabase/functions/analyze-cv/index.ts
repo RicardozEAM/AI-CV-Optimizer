@@ -231,6 +231,8 @@ async function callAIGateway(userPrompt: string, apiKey: string): Promise<string
     },
     body: JSON.stringify({
       model: "google/gemini-3-flash-preview",
+      temperature: 0.3,
+      max_tokens: 4000,
       messages: [
         { role: "system", content: SYSTEM_PROMPT },
         { role: "user", content: userPrompt },
