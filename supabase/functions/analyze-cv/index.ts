@@ -332,6 +332,20 @@ serve(async (req: Request): Promise<Response> => {
     return new Response(null, { headers: CORS_HEADERS });
   }
 
+  const ip =
+    req.headers.get("x-forwarded-for")?.split(",")[0].trim() ??
+    req.headers.get("x-real-ip") ??
+    "unknown";
+
+  try {
+    const allowed = await checkRateLimit(ip);
+    if (!allowed) {
+      return errorResponse("Has alcanzado el límite de 5 análisis por día. Intenta mañana.", 429);
+    }
+  } catch (err) {
+    log.warn("rate_limit", "Rate limit check failed, allowing request", { error: String(err) });
+  }
+
   const requestId = crypto.randomUUID().slice(0, 8);
   log.info("handler", `Request received [${requestId}]`, { method: req.method });
 
