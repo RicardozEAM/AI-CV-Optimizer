@@ -252,7 +252,7 @@ const OptimizedCvPreview = ({ cv }: OptimizedCvPreviewProps) => {
   const handleDownload = () => {
     setPdfError(null);
     try {
-      console.log("[OptimizedCvPreview] Generando PDF...");
+      if (import.meta.env.DEV) console.log("[OptimizedCvPreview] Generando PDF...");
       generatePdf(cv);
       console.log("[OptimizedCvPreview] PDF generado exitosamente");
       toast({ title: "Descargado", description: "Tu CV se descargó como PDF." });
