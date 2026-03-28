@@ -12,7 +12,7 @@ import HeroSection from "@/components/HeroSection";
 import StepFlowSection from "@/components/StepFlowSection";
 import ResultsSection from "@/components/ResultsSection";
 import ValidationQuestionsForm from "@/components/ValidationQuestionsForm";
-import PaymentModal from "@/components/PaymentModal";
+
 import OptimizedCvPreview from "@/components/OptimizedCvPreview";
 import type { CVAnalysisResult } from "@/lib/types";
 import { analyzeCv } from "@/lib/analyze-cv";
@@ -32,7 +32,6 @@ type OptimizationPhase =
   | "analyzing"
   | "awaiting_answers"
   | "reanalyzing"
-  | "pending_payment"
   | "complete";
 
 interface AppState {
@@ -126,7 +125,7 @@ const Index = () => {
     questionsTimedOut: false,
     isRegenerating: false,
   });
-  const [showPaymentModal, setShowPaymentModal] = useState(false);
+  
 
   const cvTextRef = useRef("");
   const jdTextRef = useRef("");
@@ -252,46 +251,31 @@ const Index = () => {
       const result = await analyzeCv(cvTextRef.current, jdTextRef.current, answers);
       if (!isValidAnalysisResult(result)) throw new Error("Respuesta del servidor inválida");
 
-      setState((s) => ({ ...s, phase: "pending_payment", stagedResult: result }));
-      setShowPaymentModal(true);
+      if (!hasValidOptimizedCV(result)) {
+        toast({
+          title: "Advertencia",
+          description: "El CV optimizado no pudo generarse correctamente. Intenta de nuevo.",
+          variant: "destructive",
+        });
+        setState((s) => ({ ...s, phase: "awaiting_answers" }));
+        return;
+      }
+
+      setState((s) => ({
+        ...s,
+        phase: "complete",
+        analysisResult: result,
+        stagedResult: null,
+      }));
+
+      setTimeout(() => {
+        document.getElementById("cv-optimizado")?.scrollIntoView({ behavior: "smooth" });
+      }, 300);
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : "Intenta de nuevo.";
       toast({ title: "Error al recalcular", description: msg, variant: "destructive" });
       setState((s) => ({ ...s, phase: "awaiting_answers" }));
     }
-  }, []);
-
-  const handlePaymentSuccess = useCallback(() => {
-    setShowPaymentModal(false);
-
-    setState((s) => {
-      if (!hasValidOptimizedCV(s.stagedResult)) {
-        toast({
-          title: "Advertencia",
-          description: "El CV optimizado no pudo ser generado correctamente. Intenta de nuevo.",
-          variant: "destructive",
-        });
-        return { ...s, phase: "awaiting_answers" as OptimizationPhase, stagedResult: null };
-      }
-
-      return {
-        ...s,
-        phase: "complete" as OptimizationPhase,
-        analysisResult: s.stagedResult,
-        stagedResult: null,
-      };
-    });
-
-    toast({ title: "¡Pago exitoso!", description: "Tu CV Harvard optimizado está listo." });
-
-    setTimeout(() => {
-      document.getElementById("cv-optimizado")?.scrollIntoView({ behavior: "smooth" });
-    }, 300);
-  }, []);
-
-  const handlePaymentClose = useCallback(() => {
-    setShowPaymentModal(false);
-    setState((s) => ({ ...s, phase: "awaiting_answers" as OptimizationPhase, stagedResult: null }));
   }, []);
 
   // ── Render ─────────────────────────────────────────────────────────────────
@@ -381,12 +365,6 @@ const Index = () => {
         )}
       </div>
 
-      <PaymentModal
-        open={showPaymentModal}
-        projectedScore={state.stagedResult?.analysis.match_score ?? 95}
-        onClose={handlePaymentClose}
-        onPaymentSuccess={handlePaymentSuccess}
-      />
 
       <footer className="border-t py-8">
         <div className="container text-center text-sm text-muted-foreground">
