@@ -14,7 +14,24 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      rate_limits: {
+        Row: {
+          count: number
+          ip: string
+          window_date: string
+        }
+        Insert: {
+          count?: number
+          ip: string
+          window_date?: string
+        }
+        Update: {
+          count?: number
+          ip?: string
+          window_date?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
