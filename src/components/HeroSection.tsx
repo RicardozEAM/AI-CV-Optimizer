@@ -163,10 +163,17 @@ const HeroSection = ({ onAnalysisComplete }: HeroSectionProps) => {
             </div>
             <textarea
               value={jobDescription}
-              onChange={(e) => setJobDescription(e.target.value)}
+              onChange={(e) => setJobDescription(e.target.value.slice(0, MAX_JD_CHARS))}
               placeholder="Pega aquí la descripción del puesto al que aplicas..."
               className="w-full resize-none rounded-xl border border-input bg-secondary/50 p-4 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary/50 transition-all h-[140px]"
             />
+            <p className={`text-right text-[11px] mt-1 tabular-nums ${
+              jobDescription.length >= MAX_JD_CHARS
+                ? "text-destructive font-medium"
+                : "text-muted-foreground"
+            }`}>
+              {jobDescription.length}/{MAX_JD_CHARS}
+            </p>
           </div>
         </div>
 
