@@ -17,6 +17,7 @@ const ACCEPTED_TYPES = [
 ];
 
 const MAX_FILE_SIZE_MB = 5;
+const MAX_JD_CHARS = 5000;
 
 const HeroSection = ({ onAnalysisComplete }: HeroSectionProps) => {
   const [file, setFile] = useState<File | null>(null);
