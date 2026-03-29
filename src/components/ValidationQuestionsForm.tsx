@@ -5,6 +5,7 @@ import { Textarea } from "@/components/ui/textarea";
 import type { ValidationQuestion } from "@/lib/types";
 
 const MIN_CHARS = 50;
+const MAX_CHARS = 600;
 
 interface ValidationQuestionsFormProps {
   questions: ValidationQuestion[];
