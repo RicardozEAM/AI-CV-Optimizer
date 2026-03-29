@@ -9,6 +9,7 @@ interface ResultsSectionProps {
 const ResultsSection = ({ result }: ResultsSectionProps) => {
   const sectionRef = useRef<HTMLDivElement>(null);
   const [visible, setVisible] = useState(false);
+  const [showAllKeywords, setShowAllKeywords] = useState(false);
 
   useEffect(() => {
     const observer = new IntersectionObserver(
