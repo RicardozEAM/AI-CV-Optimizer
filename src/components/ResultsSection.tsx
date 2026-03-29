@@ -9,6 +9,7 @@ interface ResultsSectionProps {
 const ResultsSection = ({ result }: ResultsSectionProps) => {
   const sectionRef = useRef<HTMLDivElement>(null);
   const [visible, setVisible] = useState(false);
+  const [showAllKeywords, setShowAllKeywords] = useState(false);
 
   useEffect(() => {
     const observer = new IntersectionObserver(
@@ -134,12 +135,25 @@ const ResultsSection = ({ result }: ResultsSectionProps) => {
               <div className="mt-5">
                 <h4 className="text-xs font-semibold text-muted-foreground mb-2 uppercase tracking-wider">Detectadas ✓</h4>
                 <div className="flex flex-wrap gap-1.5">
-                  {result.analysis.keywords_detected.map((kw) => (
+                  {(showAllKeywords
+                    ? result.analysis.keywords_detected
+                    : result.analysis.keywords_detected.slice(0, 8)
+                  ).map((kw) => (
                     <span key={kw.term} className="inline-flex items-center gap-1 rounded-md bg-success/10 px-2 py-1 text-xs font-medium text-success">
                       {kw.term}
                     </span>
                   ))}
                 </div>
+                {result.analysis.keywords_detected.length > 8 && (
+                  <button
+                    onClick={() => setShowAllKeywords((v) => !v)}
+                    className="mt-2 text-[11px] text-primary hover:underline"
+                  >
+                    {showAllKeywords
+                      ? "Ver menos"
+                      : `Ver ${result.analysis.keywords_detected.length - 8} más`}
+                  </button>
+                )}
               </div>
             )}
           </div>
