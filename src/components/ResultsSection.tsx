@@ -26,8 +26,8 @@ const ResultsSection = ({ result }: ResultsSectionProps) => {
   const CIRCUMFERENCE = 283;
 
   const isPlaceholder = !result;
-  const score = result?.analysis.match_score ?? 45;
-  const offset = CIRCUMFERENCE - (score / 100) * CIRCUMFERENCE;
+  const score = result?.analysis.match_score ?? 0;
+  const offset = isPlaceholder ? CIRCUMFERENCE : CIRCUMFERENCE - (score / 100) * CIRCUMFERENCE;
 
   const scoreColor = score >= 75 ? "hsl(var(--success))" : score >= 50 ? "hsl(var(--warning))" : "hsl(var(--destructive))";
   const scoreLabel = score >= 75 ? "Competitivo" : score >= 50 ? "Necesita mejoras" : "Necesita mejoras significativas";
@@ -88,7 +88,11 @@ const ResultsSection = ({ result }: ResultsSectionProps) => {
                 />
               </svg>
               <div className="absolute inset-0 flex flex-col items-center justify-center">
-                <span className="text-4xl font-black text-foreground">{score}%</span>
+                {isPlaceholder ? (
+                  <span className="text-3xl font-black text-muted-foreground/40">--</span>
+                ) : (
+                  <span className="text-4xl font-black text-foreground">{score}%</span>
+                )}
               </div>
             </div>
             <p className="mt-4 text-sm text-muted-foreground">{scoreLabel}</p>
