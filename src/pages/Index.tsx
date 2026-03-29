@@ -351,6 +351,43 @@ const Index = () => {
             </div>
           )}
 
+        {/* Generating CV loader */}
+        {state.phase === "reanalyzing" && (
+          <div className="bg-secondary/40 pb-20">
+            <div className="container">
+              <div className="mx-auto max-w-5xl mt-8">
+                <div className="glass-card rounded-2xl p-8 shadow-sm">
+                  <div className="flex items-center gap-4 mb-6">
+                    <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary/10">
+                      <Loader2 className="h-5 w-5 text-primary animate-spin" />
+                    </div>
+                    <div>
+                      <p className="text-sm font-semibold text-foreground">Generando tu CV Harvard optimizado...</p>
+                      <p className="text-xs text-muted-foreground">Esto puede tomar unos segundos</p>
+                    </div>
+                  </div>
+                  <div className="space-y-3">
+                    <div className="h-4 rounded-full bg-muted animate-pulse w-1/3 mx-auto" />
+                    <div className="h-3 rounded-full bg-muted animate-pulse w-1/2 mx-auto" />
+                    <div className="h-px bg-muted my-4" />
+                    <div className="h-3 rounded-full bg-muted animate-pulse w-full" />
+                    <div className="h-3 rounded-full bg-muted animate-pulse w-5/6" />
+                    <div className="h-3 rounded-full bg-muted animate-pulse w-4/6" />
+                    <div className="grid grid-cols-3 gap-2 my-4">
+                      {Array.from({ length: 6 }).map((_, i) => (
+                        <div key={i} className="h-7 rounded-lg bg-muted animate-pulse" />
+                      ))}
+                    </div>
+                    <div className="h-3 rounded-full bg-muted animate-pulse w-full" />
+                    <div className="h-3 rounded-full bg-muted animate-pulse w-5/6" />
+                    <div className="h-3 rounded-full bg-muted animate-pulse w-3/4" />
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
         {/* Optimized CV — only rendered when state is 100% complete and validated */}
         {state.phase === "complete" && hasValidOptimizedCV(state.analysisResult) && (
           <div id="cv-optimizado" className="bg-secondary/40 pb-20">
