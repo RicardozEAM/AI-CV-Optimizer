@@ -5,7 +5,16 @@ pdfjsLib.GlobalWorkerOptions.workerSrc = `https://cdnjs.cloudflare.com/ajax/libs
 
 export async function extractTextFromPdf(file: File): Promise<string> {
   const arrayBuffer = await file.arrayBuffer();
-  const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
+  let pdf: Awaited<ReturnType<typeof pdfjsLib.getDocument>["promise"]>;
+  try {
+    pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
+  } catch (err: unknown) {
+    const msg = err instanceof Error ? err.message.toLowerCase() : "";
+    if (msg.includes("password") || msg.includes("encrypted")) {
+      throw new Error("El PDF está protegido con contraseña. Súbelo sin protección e intenta de nuevo.");
+    }
+    throw err;
+  }
   const pages: string[] = [];
 
   for (let i = 1; i <= pdf.numPages; i++) {
