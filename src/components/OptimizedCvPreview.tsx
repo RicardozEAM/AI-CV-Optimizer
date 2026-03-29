@@ -214,7 +214,8 @@ function generatePdf(cv: OptimizedCv) {
     }
   }
 
-  doc.save("CV-Harvard-Optimizado.pdf");
+  const safeName = cv.header.full_name.trim().replace(/\s+/g, "-").replace(/[^a-zA-Z0-9-áéíóúÁÉÍÓÚñÑ]/g, "");
+  doc.save(`CV-${safeName}-Harvard.pdf`);
 }
 
 const OptimizedCvPreview = ({ cv }: OptimizedCvPreviewProps) => {
