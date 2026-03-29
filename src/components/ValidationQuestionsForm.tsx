@@ -56,10 +56,14 @@ const ValidationQuestionsForm = ({ questions, onSubmit, isSubmitting }: Validati
                   placeholder="Escribe tu respuesta aquí (mínimo 50 caracteres)..."
                   className="mt-2 bg-background/60 border-input/50 focus:ring-primary/30 min-h-[80px] resize-none text-sm"
                   disabled={isSubmitting}
+                  maxLength={MAX_CHARS}
                 />
-                <div className="flex justify-end mt-1.5">
-                  <span className={`text-[11px] tabular-nums ${isValid ? "text-success" : "text-muted-foreground"}`}>
-                    {len}/{MIN_CHARS} caracteres
+                <div className="flex justify-between mt-1.5">
+                  <span className={`text-[11px] ${isValid ? "text-success" : "text-muted-foreground"}`}>
+                    {isValid ? "✓ Listo" : `${Math.max(0, MIN_CHARS - len)} caracteres más`}
+                  </span>
+                  <span className={`text-[11px] tabular-nums ${len >= MAX_CHARS ? "text-destructive font-medium" : "text-muted-foreground"}`}>
+                    {len}/{MAX_CHARS}
                   </span>
                 </div>
               </div>
