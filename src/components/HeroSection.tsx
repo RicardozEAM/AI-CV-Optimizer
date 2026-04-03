@@ -100,9 +100,9 @@ const HeroSection = ({ onAnalysisComplete }: HeroSectionProps) => {
             <span className="h-1.5 w-1.5 rounded-full bg-primary animate-pulse" />
             Optimizador de CV con Inteligencia Artificial
           </div>
-          <h1 className="text-4xl font-extrabold tracking-tight text-foreground md:text-6xl text-balance" style={{ lineHeight: 1.08 }}>
+          <h1 className="text-5xl font-extrabold tracking-tight text-foreground md:text-7xl text-balance" style={{ lineHeight: 1.05 }}>
             Vence a los{" "}
-            <span className="text-primary">Algoritmos</span>
+            <span className="text-primary drop-shadow-[0_0_30px_hsl(158_100%_42%_/_0.4)]">Algoritmos</span>
           </h1>
           <p className="mt-5 text-lg text-muted-foreground text-pretty max-w-xl mx-auto">
             Tu CV es rechazado por robots antes de llegar a un humano. Nuestra IA lo optimiza para superar los filtros ATS en segundos.
