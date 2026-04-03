@@ -4,7 +4,7 @@ const Navbar = () => (
   <header className="sticky top-0 z-50 border-b border-border/40 bg-background/75 backdrop-blur-xl">
     <div className="container flex h-14 items-center justify-between">
       <a href="/" className="flex items-center gap-2.5 font-bold text-foreground group">
-        <div className="flex h-7 w-7 items-center justify-center rounded-lg border border-primary/30 bg-primary/10 transition-all duration-300 group-hover:bg-primary/20 group-hover:border-primary/50">
+        <div className="flex h-7 w-7 items-center justify-center rounded-lg border border-primary/25 bg-primary/10 transition-all duration-300 group-hover:bg-primary/15 group-hover:border-primary/40">
           <Zap className="h-3.5 w-3.5 text-primary" />
         </div>
         <span className="text-sm font-semibold tracking-tight">
