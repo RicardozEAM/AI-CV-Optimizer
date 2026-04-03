@@ -89,8 +89,9 @@ const HeroSection = ({ onAnalysisComplete }: HeroSectionProps) => {
   return (
     <section className="relative overflow-hidden py-20 md:py-32">
       <div className="pointer-events-none absolute inset-0">
-        <div className="absolute -top-40 -right-40 h-[500px] w-[500px] rounded-full bg-primary/5 blur-3xl" />
-        <div className="absolute -bottom-40 -left-40 h-[400px] w-[400px] rounded-full bg-accent/5 blur-3xl" />
+        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[400px] rounded-full bg-primary/8 blur-[120px]" />
+        <div className="absolute -bottom-40 -left-40 h-[300px] w-[300px] rounded-full bg-primary/5 blur-3xl" />
+        <div className="absolute -bottom-40 -right-40 h-[300px] w-[300px] rounded-full bg-accent/5 blur-3xl" />
       </div>
 
       <div className="container relative z-10">
