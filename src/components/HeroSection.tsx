@@ -179,7 +179,7 @@ const HeroSection = ({ onAnalysisComplete }: HeroSectionProps) => {
         </div>
 
         <div className="mt-8 text-center opacity-0 animate-fade-up" style={{ animationDelay: "300ms" }}>
-          <Button variant="hero" disabled={(!file || !jobDescription.trim()) || isAnalyzing} onClick={handleAnalyze}>
+          <Button variant="hero" disabled={(!file || !jobDescription.trim()) || isAnalyzing} onClick={handleAnalyze} className="rounded-xl px-8 h-12 text-base font-semibold shadow-[0_0_24px_hsl(158_100%_42%_/_0.3)] hover:shadow-[0_0_32px_hsl(158_100%_42%_/_0.45)] transition-all duration-300">
             {isAnalyzing ? (
               <>
                 <Loader2 className="h-5 w-5 animate-spin" />
