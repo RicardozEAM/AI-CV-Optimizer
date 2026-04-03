@@ -96,8 +96,8 @@ const HeroSection = ({ onAnalysisComplete }: HeroSectionProps) => {
 
       <div className="container relative z-10">
         <div className="mx-auto max-w-3xl text-center mb-12 opacity-0 animate-fade-up">
-          <div className="inline-flex items-center gap-2 rounded-full border bg-card px-4 py-1.5 text-xs font-medium text-muted-foreground mb-6 shadow-sm">
-            <span className="h-1.5 w-1.5 rounded-full bg-accent" />
+          <div className="inline-flex items-center gap-2 rounded-full border border-primary/20 bg-primary/8 px-4 py-1.5 text-xs font-medium text-primary mb-6 shadow-sm">
+            <span className="h-1.5 w-1.5 rounded-full bg-primary animate-pulse" />
             Optimizador de CV con Inteligencia Artificial
           </div>
           <h1 className="text-4xl font-extrabold tracking-tight text-foreground md:text-6xl text-balance" style={{ lineHeight: 1.08 }}>
