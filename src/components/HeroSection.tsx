@@ -152,7 +152,7 @@ const HeroSection = ({ onAnalysisComplete }: HeroSectionProps) => {
           </div>
 
           {/* Job Description Card */}
-          <div className="glass-card rounded-2xl p-6 shadow-sm hover:shadow-md transition-shadow duration-300">
+          <div className="glass-card rounded-2xl p-6 transition-all duration-300 border border-border hover:border-primary/20 hover:shadow-[0_0_24px_hsl(158_100%_42%_/_0.06)]">
             <div className="flex items-center gap-3 mb-4">
               <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-accent/10">
                 <Link2 className="h-5 w-5 text-accent" />
