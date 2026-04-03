@@ -7,62 +7,62 @@
 @layer base {
   :root {
     /* ── Base ── */
-    --background: 240 10% 4%;
+    --background: 222 47% 5%;
     --foreground: 210 20% 96%;
 
     /* ── Card / Popover ── */
-    --card: 240 8% 7%;
+    --card: 222 40% 7%;
     --card-foreground: 210 20% 96%;
-    --popover: 240 8% 7%;
+    --popover: 222 40% 7%;
     --popover-foreground: 210 20% 96%;
 
-    /* ── Primary — Amarillo ── */
-    --primary: 52 98% 64%;
-    --primary-foreground: 240 10% 4%;
+    /* ── Primary — Verde esmeralda ── */
+    --primary: 158 100% 42%;
+    --primary-foreground: 222 47% 5%;
 
     /* ── Secondary ── */
-    --secondary: 240 8% 12%;
-    --secondary-foreground: 210 15% 70%;
+    --secondary: 222 35% 11%;
+    --secondary-foreground: 210 15% 65%;
 
     /* ── Muted ── */
-    --muted: 240 8% 14%;
-    --muted-foreground: 215 12% 50%;
+    --muted: 222 30% 13%;
+    --muted-foreground: 215 12% 45%;
 
-    /* ── Accent — Cyan ── */
-    --accent: 187 85% 53%;
-    --accent-foreground: 240 10% 4%;
+    /* ── Accent — Ámbar ── */
+    --accent: 35 95% 55%;
+    --accent-foreground: 222 47% 5%;
 
     /* ── Destructive ── */
     --destructive: 0 72% 60%;
     --destructive-foreground: 0 0% 100%;
 
     /* ── Border / Input / Ring ── */
-    --border: 240 8% 16%;
-    --input: 240 8% 14%;
-    --ring: 52 98% 64%;
+    --border: 222 30% 14%;
+    --input: 222 30% 12%;
+    --ring: 158 100% 42%;
 
     /* ── Radius ── */
     --radius: 0.75rem;
 
     /* ── Sidebar ── */
-    --sidebar-background: 240 8% 7%;
-    --sidebar-foreground: 210 15% 70%;
-    --sidebar-primary: 52 98% 64%;
-    --sidebar-primary-foreground: 240 10% 4%;
-    --sidebar-accent: 240 8% 12%;
+    --sidebar-background: 222 40% 7%;
+    --sidebar-foreground: 210 15% 65%;
+    --sidebar-primary: 158 100% 42%;
+    --sidebar-primary-foreground: 222 47% 5%;
+    --sidebar-accent: 222 35% 11%;
     --sidebar-accent-foreground: 210 20% 96%;
-    --sidebar-border: 240 8% 16%;
-    --sidebar-ring: 52 98% 64%;
+    --sidebar-border: 222 30% 14%;
+    --sidebar-ring: 158 100% 42%;
 
     /* ── Custom tokens ── */
-    --warning: 38 92% 55%;
-    --warning-foreground: 240 10% 4%;
-    --success: 158 64% 48%;
-    --success-foreground: 240 10% 4%;
+    --warning: 35 95% 55%;
+    --warning-foreground: 222 47% 5%;
+    --success: 158 100% 42%;
+    --success-foreground: 222 47% 5%;
 
     /* ── Glass ── */
-    --glass: 240 8% 10% / 0.7;
-    --glass-border: 52 98% 64% / 0.12;
+    --glass: 222 40% 8% / 0.75;
+    --glass-border: 158 100% 42% / 0.1;
   }
 }
 
@@ -75,7 +75,7 @@
     font-family: 'Inter', system-ui, sans-serif;
   }
   ::selection {
-    background: hsl(52 98% 64% / 0.3);
+    background: hsl(158 100% 42% / 0.25);
     color: hsl(210 20% 96%);
   }
 }
@@ -88,13 +88,13 @@
     border: 1px solid hsla(var(--glass-border));
   }
   .glow-primary {
-    box-shadow: 0 0 24px hsl(52 98% 64% / 0.25), 0 0 48px hsl(52 98% 64% / 0.1);
+    box-shadow: 0 0 24px hsl(158 100% 42% / 0.2), 0 0 48px hsl(158 100% 42% / 0.08);
   }
   .glow-primary-sm {
-    box-shadow: 0 0 12px hsl(52 98% 64% / 0.3);
+    box-shadow: 0 0 12px hsl(158 100% 42% / 0.25);
   }
   .hero-glow {
-    background: radial-gradient(ellipse 80% 50% at 50% -10%, hsl(52 98% 64% / 0.15), transparent);
+    background: radial-gradient(ellipse 80% 50% at 50% -10%, hsl(158 100% 42% / 0.1), transparent);
   }
   .text-balance {
     text-wrap: balance;
@@ -103,7 +103,7 @@
     text-wrap: pretty;
   }
   .gradient-text {
-    background: linear-gradient(135deg, hsl(210 20% 96%) 0%, hsl(52 98% 74%) 100%);
+    background: linear-gradient(135deg, hsl(210 20% 96%) 0%, hsl(158 100% 55%) 100%);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
@@ -124,8 +124,8 @@
 }
 
 @keyframes pulse-subtle {
-  0%, 100% { box-shadow: 0 0 0 0 hsl(52 98% 64% / 0.4); }
-  50% { box-shadow: 0 0 0 8px hsl(52 98% 64% / 0); }
+  0%, 100% { box-shadow: 0 0 0 0 hsl(158 100% 42% / 0.4); }
+  50% { box-shadow: 0 0 0 8px hsl(158 100% 42% / 0); }
 }
 .animate-pulse-subtle {
   animation: pulse-subtle 2s ease-in-out infinite;
