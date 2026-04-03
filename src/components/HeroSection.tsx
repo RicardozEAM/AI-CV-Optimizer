@@ -89,19 +89,20 @@ const HeroSection = ({ onAnalysisComplete }: HeroSectionProps) => {
   return (
     <section className="relative overflow-hidden py-20 md:py-32">
       <div className="pointer-events-none absolute inset-0">
-        <div className="absolute -top-40 -right-40 h-[500px] w-[500px] rounded-full bg-primary/5 blur-3xl" />
-        <div className="absolute -bottom-40 -left-40 h-[400px] w-[400px] rounded-full bg-accent/5 blur-3xl" />
+        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[400px] rounded-full bg-primary/8 blur-[120px]" />
+        <div className="absolute -bottom-40 -left-40 h-[300px] w-[300px] rounded-full bg-primary/5 blur-3xl" />
+        <div className="absolute -bottom-40 -right-40 h-[300px] w-[300px] rounded-full bg-accent/5 blur-3xl" />
       </div>
 
       <div className="container relative z-10">
         <div className="mx-auto max-w-3xl text-center mb-12 opacity-0 animate-fade-up">
-          <div className="inline-flex items-center gap-2 rounded-full border bg-card px-4 py-1.5 text-xs font-medium text-muted-foreground mb-6 shadow-sm">
-            <span className="h-1.5 w-1.5 rounded-full bg-accent" />
+          <div className="inline-flex items-center gap-2 rounded-full border border-primary/20 bg-primary/8 px-4 py-1.5 text-xs font-medium text-primary mb-6 shadow-sm">
+            <span className="h-1.5 w-1.5 rounded-full bg-primary animate-pulse" />
             Optimizador de CV con Inteligencia Artificial
           </div>
-          <h1 className="text-4xl font-extrabold tracking-tight text-foreground md:text-6xl text-balance" style={{ lineHeight: 1.08 }}>
+          <h1 className="text-5xl font-extrabold tracking-tight text-foreground md:text-7xl text-balance" style={{ lineHeight: 1.05 }}>
             Vence a los{" "}
-            <span className="text-primary">Algoritmos</span>
+            <span className="text-primary drop-shadow-[0_0_30px_hsl(158_100%_42%_/_0.4)]">Algoritmos</span>
           </h1>
           <p className="mt-5 text-lg text-muted-foreground text-pretty max-w-xl mx-auto">
             Tu CV es rechazado por robots antes de llegar a un humano. Nuestra IA lo optimiza para superar los filtros ATS en segundos.
@@ -111,8 +112,8 @@ const HeroSection = ({ onAnalysisComplete }: HeroSectionProps) => {
         <div className="mx-auto max-w-4xl grid gap-4 md:grid-cols-2 opacity-0 animate-fade-up" style={{ animationDelay: "150ms" }}>
           {/* File Upload Card */}
           <div
-            className={`glass-card rounded-2xl p-6 transition-all duration-300 ${
-              isDragging ? "ring-2 ring-primary shadow-lg shadow-primary/10 scale-[1.01]" : "shadow-sm hover:shadow-md"
+            className={`glass-card rounded-2xl p-6 transition-all duration-300 border border-border hover:border-primary/20 hover:shadow-[0_0_24px_hsl(158_100%_42%_/_0.06)] ${
+              isDragging ? "ring-2 ring-primary shadow-lg shadow-primary/10 scale-[1.01] border-primary/30" : ""
             }`}
             onDragOver={(e) => { e.preventDefault(); setIsDragging(true); }}
             onDragLeave={() => setIsDragging(false)}
@@ -139,7 +140,7 @@ const HeroSection = ({ onAnalysisComplete }: HeroSectionProps) => {
             ) : (
               <button
                 onClick={() => fileInputRef.current?.click()}
-                className="w-full rounded-xl border-2 border-dashed border-input bg-secondary/50 p-8 text-center transition-colors hover:border-primary/40 hover:bg-primary/5 active:scale-[0.98]"
+                className="w-full rounded-xl border-2 border-dashed border-border bg-secondary/30 p-8 text-center transition-all duration-300 hover:border-primary/30 hover:bg-primary/5 active:scale-[0.98]"
               >
                 <Upload className="mx-auto h-8 w-8 text-muted-foreground mb-2" />
                 <p className="text-sm font-medium text-foreground">Arrastra tu PDF o DOCX aquí</p>
@@ -151,7 +152,7 @@ const HeroSection = ({ onAnalysisComplete }: HeroSectionProps) => {
           </div>
 
           {/* Job Description Card */}
-          <div className="glass-card rounded-2xl p-6 shadow-sm hover:shadow-md transition-shadow duration-300">
+          <div className="glass-card rounded-2xl p-6 transition-all duration-300 border border-border hover:border-primary/20 hover:shadow-[0_0_24px_hsl(158_100%_42%_/_0.06)]">
             <div className="flex items-center gap-3 mb-4">
               <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-accent/10">
                 <Link2 className="h-5 w-5 text-accent" />
@@ -178,7 +179,7 @@ const HeroSection = ({ onAnalysisComplete }: HeroSectionProps) => {
         </div>
 
         <div className="mt-8 text-center opacity-0 animate-fade-up" style={{ animationDelay: "300ms" }}>
-          <Button variant="hero" disabled={(!file || !jobDescription.trim()) || isAnalyzing} onClick={handleAnalyze}>
+          <Button variant="hero" disabled={(!file || !jobDescription.trim()) || isAnalyzing} onClick={handleAnalyze} className="rounded-xl px-8 h-12 text-base font-semibold shadow-[0_0_24px_hsl(158_100%_42%_/_0.3)] hover:shadow-[0_0_32px_hsl(158_100%_42%_/_0.45)] transition-all duration-300">
             {isAnalyzing ? (
               <>
                 <Loader2 className="h-5 w-5 animate-spin" />
