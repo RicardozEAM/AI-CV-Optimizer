@@ -140,7 +140,7 @@ const HeroSection = ({ onAnalysisComplete }: HeroSectionProps) => {
             ) : (
               <button
                 onClick={() => fileInputRef.current?.click()}
-                className="w-full rounded-xl border-2 border-dashed border-input bg-secondary/50 p-8 text-center transition-colors hover:border-primary/40 hover:bg-primary/5 active:scale-[0.98]"
+                className="w-full rounded-xl border-2 border-dashed border-border bg-secondary/30 p-8 text-center transition-all duration-300 hover:border-primary/30 hover:bg-primary/5 active:scale-[0.98]"
               >
                 <Upload className="mx-auto h-8 w-8 text-muted-foreground mb-2" />
                 <p className="text-sm font-medium text-foreground">Arrastra tu PDF o DOCX aquí</p>
