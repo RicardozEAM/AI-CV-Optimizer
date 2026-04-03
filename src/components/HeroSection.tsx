@@ -112,8 +112,8 @@ const HeroSection = ({ onAnalysisComplete }: HeroSectionProps) => {
         <div className="mx-auto max-w-4xl grid gap-4 md:grid-cols-2 opacity-0 animate-fade-up" style={{ animationDelay: "150ms" }}>
           {/* File Upload Card */}
           <div
-            className={`glass-card rounded-2xl p-6 transition-all duration-300 ${
-              isDragging ? "ring-2 ring-primary shadow-lg shadow-primary/10 scale-[1.01]" : "shadow-sm hover:shadow-md"
+            className={`glass-card rounded-2xl p-6 transition-all duration-300 border border-border hover:border-primary/20 hover:shadow-[0_0_24px_hsl(158_100%_42%_/_0.06)] ${
+              isDragging ? "ring-2 ring-primary shadow-lg shadow-primary/10 scale-[1.01] border-primary/30" : ""
             }`}
             onDragOver={(e) => { e.preventDefault(); setIsDragging(true); }}
             onDragLeave={() => setIsDragging(false)}
