@@ -1,5 +1,5 @@
 import { useState, useRef } from "react";
-import { Upload, Link2, FileText, X, Loader2 } from "lucide-react";
+import { Upload, Link2, FileText, X, Loader2, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { extractText } from "@/lib/pdf-extract";
 import { analyzeCv } from "@/lib/analyze-cv";
@@ -88,16 +88,20 @@ const HeroSection = ({ onAnalysisComplete }: HeroSectionProps) => {
 
   return (
     <section className="relative overflow-hidden py-20 md:py-32">
+      {/* Animated background orbs */}
       <div className="pointer-events-none absolute inset-0">
-        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[400px] rounded-full bg-primary/8 blur-[120px]" />
-        <div className="absolute -bottom-40 -left-40 h-[300px] w-[300px] rounded-full bg-primary/5 blur-3xl" />
-        <div className="absolute -bottom-40 -right-40 h-[300px] w-[300px] rounded-full bg-accent/5 blur-3xl" />
+        <div className="orb orb-1" />
+        <div className="orb orb-2" />
+        <div className="orb orb-3" />
       </div>
+
+      {/* Grid overlay */}
+      <div className="pointer-events-none absolute inset-0 bg-grid bg-grid-fade" />
 
       <div className="container relative z-10">
         <div className="mx-auto max-w-3xl text-center mb-12 opacity-0 animate-fade-up">
-          <div className="inline-flex items-center gap-2 rounded-full border border-primary/20 bg-primary/8 px-4 py-1.5 text-xs font-medium text-primary mb-6 shadow-sm">
-            <span className="h-1.5 w-1.5 rounded-full bg-primary animate-pulse" />
+          <div className="inline-flex items-center gap-2 rounded-full border border-primary/25 bg-primary/10 px-4 py-1.5 text-xs font-medium text-primary mb-6 shadow-[0_0_16px_hsl(158_100%_42%_/_0.1)]">
+            <Sparkles className="h-3.5 w-3.5 animate-pulse" />
             Optimizador de CV con Inteligencia Artificial
           </div>
           <h1 className="text-5xl font-extrabold tracking-tight text-foreground md:text-7xl text-balance" style={{ lineHeight: 1.05 }}>
@@ -112,7 +116,7 @@ const HeroSection = ({ onAnalysisComplete }: HeroSectionProps) => {
         <div className="mx-auto max-w-4xl grid gap-4 md:grid-cols-2 opacity-0 animate-fade-up" style={{ animationDelay: "150ms" }}>
           {/* File Upload Card */}
           <div
-            className={`glass-card rounded-2xl p-6 transition-all duration-300 border border-border hover:border-primary/20 hover:shadow-[0_0_24px_hsl(158_100%_42%_/_0.06)] ${
+            className={`card-lift glass-card rounded-2xl p-6 border border-border hover:border-primary/20 ${
               isDragging ? "ring-2 ring-primary shadow-lg shadow-primary/10 scale-[1.01] border-primary/30" : ""
             }`}
             onDragOver={(e) => { e.preventDefault(); setIsDragging(true); }}
@@ -130,7 +134,7 @@ const HeroSection = ({ onAnalysisComplete }: HeroSectionProps) => {
             </div>
 
             {file ? (
-              <div className="flex items-center gap-3 rounded-xl bg-secondary p-4">
+              <div className="flex items-center gap-3 rounded-xl bg-primary/5 border border-primary/15 p-4 transition-all">
                 <FileText className="h-5 w-5 text-primary" />
                 <span className="text-sm font-medium text-foreground truncate flex-1">{file.name}</span>
                 <button onClick={() => setFile(null)} className="text-muted-foreground hover:text-foreground transition-colors">
@@ -140,9 +144,11 @@ const HeroSection = ({ onAnalysisComplete }: HeroSectionProps) => {
             ) : (
               <button
                 onClick={() => fileInputRef.current?.click()}
-                className="w-full rounded-xl border-2 border-dashed border-primary/20 bg-primary/3 p-8 text-center transition-all duration-300 hover:border-primary/35 hover:bg-primary/6 active:scale-[0.98]"
+                className="group/drop w-full rounded-xl border-2 border-dashed border-primary/20 bg-primary/3 p-8 text-center transition-all duration-300 hover:border-primary/35 hover:bg-primary/6 active:scale-[0.98]"
               >
-                <Upload className="mx-auto h-8 w-8 text-muted-foreground mb-2" />
+                <div className="mx-auto mb-2 flex h-12 w-12 items-center justify-center rounded-full bg-primary/10 transition-transform duration-300 group-hover/drop:scale-110">
+                  <Upload className="h-6 w-6 text-muted-foreground transition-colors group-hover/drop:text-primary" />
+                </div>
                 <p className="text-sm font-medium text-foreground">Arrastra tu PDF o DOCX aquí</p>
                 <p className="text-xs text-muted-foreground mt-1">o haz clic para seleccionar</p>
               </button>
@@ -152,7 +158,7 @@ const HeroSection = ({ onAnalysisComplete }: HeroSectionProps) => {
           </div>
 
           {/* Job Description Card */}
-          <div className="glass-card rounded-2xl p-6 transition-all duration-300 border border-border hover:border-primary/20 hover:shadow-[0_0_24px_hsl(158_100%_42%_/_0.06)]">
+          <div className="card-lift glass-card rounded-2xl p-6 border border-border hover:border-primary/20">
             <div className="flex items-center gap-3 mb-4">
               <div className="flex h-10 w-10 items-center justify-center rounded-xl border border-primary/25 bg-primary/10">
                 <Link2 className="h-5 w-5 text-primary" />
