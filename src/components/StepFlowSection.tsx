@@ -68,7 +68,7 @@ const StepFlowSection = () => {
                 style={{ transitionDelay: visible ? `${i * 120 + 200}ms` : "0ms", transition: "opacity 0.6s cubic-bezier(0.16,1,0.3,1), transform 0.6s cubic-bezier(0.16,1,0.3,1)" }}
               >
                 {/* Step number watermark */}
-                <span className="text-5xl font-black text-primary/[0.06] absolute top-4 right-6 select-none">
+                <span className="text-5xl font-black absolute top-4 right-6 select-none text-secondary-foreground">
                   {step.number}
                 </span>
 
