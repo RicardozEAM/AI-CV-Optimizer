@@ -167,7 +167,7 @@ function ScoreCard({ visible, isPlaceholder, score, scoreColor, scoreLabel, offs
 function KeywordsCard({ visible, isPlaceholder, missingKeywords, detectedKeywords, showAll, onToggleShowAll }: {
   visible: boolean; isPlaceholder: boolean;
   missingKeywords: { term: string; weight: string; vacancy_frequency: number }[];
-  detectedKeywords?: { term: string; in_cv: boolean }[] | null;
+  detectedKeywords?: { term: string; weight: string; found_in: string; has_evidence?: boolean }[] | null;
   showAll: boolean; onToggleShowAll: () => void;
 }) {
   return (
