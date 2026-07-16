@@ -5,20 +5,20 @@ const steps = [
   {
     icon: Search,
     number: "01",
-    title: "Diagnóstico Instantáneo",
-    description: "Carga tu CV y la vacante. Nuestra IA detecta por qué los robots te descartan.",
+    title: "Análisis del perfil",
+    description: "Sube el CV del candidato y la vacante. La IA detecta match, brechas y keywords faltantes para el rol.",
   },
   {
     icon: MessageSquare,
     number: "02",
-    title: "Preguntas de Personalización",
-    description: "Respondemos 3 preguntas clave para extraer tus logros reales, sin inventar datos.",
+    title: "Guía de Phone Screen",
+    description: "Recibe preguntas sugeridas por la IA para validar el perfil durante la entrevista telefónica.",
   },
   {
     icon: FileCheck,
     number: "03",
-    title: "Tu CV Harvard Listo",
-    description: "Descarga un documento blindado contra rechazos automáticos, optimizado al 100%.",
+    title: "CV estandarizado",
+    description: "Descarga el CV en formato Harvard, listo para presentar a gerencia y clientes.",
   },
 ];
 
@@ -46,13 +46,13 @@ const StepFlowSection = () => {
         <div className={`text-center mb-16 transition-all duration-700 ${visible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-5"}`}>
           <div className="inline-flex items-center gap-2 rounded-full border border-primary/20 bg-primary/8 px-4 py-1.5 text-xs font-medium text-primary mb-4">
             <span className="h-1.5 w-1.5 rounded-full bg-primary" />
-            Simple y rápido
+            Flujo del reclutador
           </div>
           <h2 className="text-3xl font-bold tracking-tight text-foreground md:text-4xl text-balance">
             Cómo funciona
           </h2>
           <p className="mt-3 text-muted-foreground max-w-md mx-auto text-pretty">
-            De un CV rechazado a uno aprobado por ATS en tres simples pasos
+            De un CV crudo a un perfil estandarizado listo para presentar, en tres pasos.
           </p>
         </div>
 
