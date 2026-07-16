@@ -102,14 +102,14 @@ const HeroSection = ({ onAnalysisComplete }: HeroSectionProps) => {
         <div className="mx-auto max-w-3xl text-center mb-12 opacity-0 animate-fade-up">
           <div className="inline-flex items-center gap-2 rounded-full border border-primary/25 bg-primary/10 px-4 py-1.5 text-xs font-medium text-primary mb-6 shadow-[0_0_16px_hsl(158_100%_42%_/_0.1)]">
             <Sparkles className="h-3.5 w-3.5 animate-pulse" />
-            Optimizador de CV con Inteligencia Artificial
+            TechScreen AI · TA Portal
           </div>
           <h1 className="text-5xl font-extrabold tracking-tight text-foreground md:text-7xl text-balance" style={{ lineHeight: 1.05 }}>
-            Vence a los{" "}
-            <span className="text-primary drop-shadow-[0_0_30px_hsl(158_100%_42%_/_0.4)]">Algoritmos</span>
+            Estandariza perfiles{" "}
+            <span className="text-primary drop-shadow-[0_0_30px_hsl(158_100%_42%_/_0.4)]">técnicos</span>
           </h1>
           <p className="mt-5 text-lg text-muted-foreground text-pretty max-w-xl mx-auto">
-            Tu CV es rechazado por robots antes de llegar a un humano. Nuestra IA lo optimiza para superar los filtros ATS en segundos.
+            Herramienta interna para reclutadores IT: analiza perfiles técnicos, identifica brechas y estandariza CVs para presentar a gerencia y clientes.
           </p>
         </div>
 
@@ -128,8 +128,8 @@ const HeroSection = ({ onAnalysisComplete }: HeroSectionProps) => {
                 <Upload className="h-5 w-5 text-primary" />
               </div>
               <div>
-                <h3 className="font-semibold text-foreground text-sm">Sube tu CV</h3>
-                <p className="text-xs text-muted-foreground">PDF o DOCX, máx. 5MB</p>
+                <h3 className="font-semibold text-foreground text-sm">CV del candidato</h3>
+                <p className="text-xs text-muted-foreground whitespace-nowrap">PDF o DOCX, máx. 5MB · ej. FullStack Web Developer Senior</p>
               </div>
             </div>
 
@@ -149,7 +149,7 @@ const HeroSection = ({ onAnalysisComplete }: HeroSectionProps) => {
                 <div className="mx-auto mb-2 flex h-12 w-12 items-center justify-center rounded-full bg-primary/10 transition-transform duration-300 group-hover/drop:scale-110">
                   <Upload className="h-6 w-6 text-muted-foreground transition-colors group-hover/drop:text-primary" />
                 </div>
-                <p className="text-sm font-medium text-foreground">Arrastra tu PDF o DOCX aquí</p>
+                <p className="text-sm font-medium text-foreground">Arrastra el CV del candidato aquí</p>
                 <p className="text-xs text-muted-foreground mt-1">o haz clic para seleccionar</p>
               </button>
             )}
@@ -164,14 +164,14 @@ const HeroSection = ({ onAnalysisComplete }: HeroSectionProps) => {
                 <Link2 className="h-5 w-5 text-primary" />
               </div>
               <div>
-                <h3 className="font-semibold text-foreground text-sm">Pega la vacante</h3>
-                <p className="text-xs text-muted-foreground">Descripción del empleo</p>
+                <h3 className="font-semibold text-foreground text-sm">Descripción de la vacante</h3>
+                <p className="text-xs text-muted-foreground whitespace-nowrap">Perfil objetivo · ej. FullStack Web Developer Senior</p>
               </div>
             </div>
             <textarea
               value={jobDescription}
               onChange={(e) => setJobDescription(e.target.value.slice(0, MAX_JD_CHARS))}
-              placeholder="Pega aquí la descripción del puesto al que aplicas..."
+              placeholder="Pega aquí la descripción del puesto (ej. FullStack Web Developer Senior)..."
               className="w-full resize-none rounded-xl border border-input bg-secondary/50 p-4 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary/50 transition-all h-[140px]"
             />
             <p className={`text-right text-[11px] mt-1 tabular-nums ${
@@ -189,13 +189,13 @@ const HeroSection = ({ onAnalysisComplete }: HeroSectionProps) => {
             {isAnalyzing ? (
               <>
                 <Loader2 className="h-5 w-5 animate-spin" />
-                Analizando...
+                Analizando perfil...
               </>
             ) : (
-              "Analizar mi CV gratis"
+              "Analizar perfil técnico"
             )}
           </Button>
-          <p className="mt-3 text-xs text-muted-foreground">Sin registro · Resultado en ~15 segundos</p>
+          <p className="mt-3 text-xs text-muted-foreground">Uso interno · Resultado en ~15 segundos</p>
         </div>
       </div>
     </section>

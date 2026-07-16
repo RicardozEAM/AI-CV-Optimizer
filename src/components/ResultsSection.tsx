@@ -192,7 +192,7 @@ function KeywordsCard({ visible, isPlaceholder, missingKeywords, detectedKeyword
 
       {detectedKeywords && detectedKeywords.length > 0 && (
         <div className="mt-5 pt-4 border-t border-border/40">
-          <h4 className="text-xs font-semibold text-primary/70 mb-2.5 uppercase tracking-widest">Detectadas ✓</h4>
+          <h4 className="text-xs font-semibold text-primary/70 mb-2.5 uppercase tracking-widest">Detectadas</h4>
           <div className="flex flex-wrap gap-1.5">
             {(showAll ? detectedKeywords : detectedKeywords.slice(0, 8)).map((kw) => (
               <span key={kw.term} className="inline-flex items-center rounded-md border border-primary/20 bg-primary/8 px-2 py-1 text-xs font-medium text-primary">
@@ -231,7 +231,7 @@ function AlertsCard({ visible, isPlaceholder, alerts, alertIcon }: {
             <div className="min-w-0">
               <span className="text-sm text-foreground block leading-snug">{alert.message}</span>
               {alert.fix && (
-                <span className="text-xs text-primary/60 mt-1 block">💡 {alert.fix}</span>
+                <span className="text-xs text-primary/60 mt-1 block">{alert.fix}</span>
               )}
             </div>
           </div>
