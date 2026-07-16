@@ -6,7 +6,6 @@ import {
   type ReactNode,
   type ErrorInfo,
 } from "react";
-import Navbar from "@/components/Navbar";
 import HeroSection from "@/components/HeroSection";
 import StepFlowSection from "@/components/StepFlowSection";
 import ResultsSection from "@/components/ResultsSection";
