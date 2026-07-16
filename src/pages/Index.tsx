@@ -6,7 +6,6 @@ import {
   type ReactNode,
   type ErrorInfo,
 } from "react";
-import Navbar from "@/components/Navbar";
 import HeroSection from "@/components/HeroSection";
 import StepFlowSection from "@/components/StepFlowSection";
 import ResultsSection from "@/components/ResultsSection";
@@ -181,7 +180,6 @@ const Index = () => {
 
   return (
     <div className="min-h-screen bg-background">
-      <Navbar />
       <HeroSection onAnalysisComplete={handleAnalysisComplete} />
 
       <div id="como-funciona">
