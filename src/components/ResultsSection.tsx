@@ -57,13 +57,8 @@ const ResultsSection = ({ result }: ResultsSectionProps) => {
   };
 
   return (
-    <section ref={sectionRef} className="relative py-20 md:py-28 bg-background overflow-hidden">
-      {/* Background glow */}
-      <div className="pointer-events-none absolute inset-0">
-        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[500px] h-[250px] rounded-full bg-primary/5 blur-[100px]" />
-      </div>
-
-      <div className="container relative z-10">
+    <section ref={sectionRef} className="relative py-16 md:py-20 bg-background border-b border-border">
+      <div className="container">
         <div className={`text-center mb-16 transition-all duration-700 ${visible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-5"}`}>
           <div className="inline-flex items-center gap-2 rounded-full border border-primary/20 bg-primary/8 px-4 py-1.5 text-xs font-medium text-primary mb-4">
             <span className="h-1.5 w-1.5 rounded-full bg-primary" />

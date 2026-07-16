@@ -137,12 +137,8 @@ const Dashboard = () => {
   };
 
   return (
-    <section ref={dashboardRef} className="relative py-16 md:py-20 bg-background overflow-hidden">
-      <div className="pointer-events-none absolute inset-0">
-        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[600px] h-[280px] rounded-full bg-primary/5 blur-[120px]" />
-      </div>
-
-      <div className="container relative z-10">
+    <section ref={dashboardRef} className="relative py-16 md:py-20 bg-background">
+      <div className="container">
         {/* Header */}
         <div className="flex flex-wrap items-start justify-between gap-4 mb-10">
           <div>
