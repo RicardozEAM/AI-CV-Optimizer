@@ -150,7 +150,7 @@ function ScoreCard({ visible, isPlaceholder, score, scoreColor, scoreLabel, offs
             strokeDasharray={circumference}
             strokeDashoffset={visible ? offset : circumference}
             className="transition-all duration-[1.2s] ease-out"
-            style={!isPlaceholder && score >= 75 ? { filter: "drop-shadow(0 0 6px hsl(158 100% 42% / 0.5))" } : {}}
+            style={{}}
           />
         </svg>
         <div className="absolute inset-0 flex flex-col items-center justify-center">
