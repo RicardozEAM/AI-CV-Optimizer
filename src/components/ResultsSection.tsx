@@ -31,9 +31,9 @@ const ResultsSection = ({ result }: ResultsSectionProps) => {
   const offset = isPlaceholder ? CIRCUMFERENCE : CIRCUMFERENCE - (score / 100) * CIRCUMFERENCE;
 
   const scoreColor = score >= 75
-    ? "hsl(158 100% 42%)"
+    ? "hsl(243 75% 59%)"
     : score >= 50
-    ? "hsl(35 95% 55%)"
+    ? "hsl(32 95% 44%)"
     : "hsl(0 72% 60%)";
 
   const scoreLabel = score >= 75 ? "Competitivo" : score >= 50 ? "Necesita mejoras" : "Necesita mejoras significativas";
@@ -167,9 +167,9 @@ function ScoreCard({ visible, isPlaceholder, score, scoreColor, scoreLabel, offs
 
       {scoringDetails && (
         <div className="mt-6 space-y-2.5 text-left">
-          <ScoreBar label="Keywords" value={scoringDetails.keywords} max={30} color="hsl(158 100% 42%)" />
-          <ScoreBar label="Experiencia" value={scoringDetails.experience} max={40} color={scoringDetails.experience >= 30 ? "hsl(158 100% 42%)" : "hsl(35 95% 55%)"} />
-          <ScoreBar label="Estructura" value={scoringDetails.structure} max={30} color="hsl(158 100% 42%)" />
+          <ScoreBar label="Keywords" value={scoringDetails.keywords} max={30} color="hsl(243 75% 59%)" />
+          <ScoreBar label="Experiencia" value={scoringDetails.experience} max={40} color={scoringDetails.experience >= 30 ? "hsl(243 75% 59%)" : "hsl(32 95% 44%)"} />
+          <ScoreBar label="Estructura" value={scoringDetails.structure} max={30} color="hsl(243 75% 59%)" />
         </div>
       )}
     </div>

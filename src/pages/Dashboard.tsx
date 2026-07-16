@@ -209,8 +209,8 @@ const Dashboard = () => {
                 <BarChart data={recruiterVolume} margin={{ top: 10, right: 10, left: -10, bottom: 0 }}>
                   <defs>
                     <linearGradient id="barGrad" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="0%" stopColor="hsl(158 100% 42%)" stopOpacity={0.95} />
-                      <stop offset="100%" stopColor="hsl(158 100% 42%)" stopOpacity={0.35} />
+                      <stop offset="0%" stopColor="hsl(243 75% 59%)" stopOpacity={0.95} />
+                      <stop offset="100%" stopColor="hsl(243 75% 59%)" stopOpacity={0.35} />
                     </linearGradient>
                   </defs>
                   <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" vertical={false} />
