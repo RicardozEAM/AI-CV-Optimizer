@@ -1,6 +1,7 @@
 import { useState, useRef } from "react";
-import { Upload, Link2, FileText, X, Loader2, Sparkles } from "lucide-react";
+import { Upload, Link2, FileText, X, Loader2, Sparkles, ShieldCheck } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
 import { extractText } from "@/lib/pdf-extract";
 import { analyzeCv } from "@/lib/analyze-cv";
 import type { CVAnalysisResult } from "@/lib/types";
@@ -24,6 +25,7 @@ const HeroSection = ({ onAnalysisComplete }: HeroSectionProps) => {
   const [isDragging, setIsDragging] = useState(false);
   const [jobDescription, setJobDescription] = useState("");
   const [isAnalyzing, setIsAnalyzing] = useState(false);
+  const [consentGiven, setConsentGiven] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const isValidFile = (f: File) => {
@@ -184,8 +186,29 @@ const HeroSection = ({ onAnalysisComplete }: HeroSectionProps) => {
           </div>
         </div>
 
-        <div className="mt-8 text-center opacity-0 animate-fade-up" style={{ animationDelay: "300ms" }}>
-          <Button variant="hero" disabled={(!file || !jobDescription.trim()) || isAnalyzing} onClick={handleAnalyze} className="rounded-xl px-8 h-12 text-base font-semibold shadow-[0_0_24px_hsl(158_100%_42%_/_0.3)] hover:shadow-[0_0_32px_hsl(158_100%_42%_/_0.45)] transition-all duration-300">
+        <div className="mt-8 flex flex-col items-center gap-4 opacity-0 animate-fade-up" style={{ animationDelay: "300ms" }}>
+          <label
+            htmlFor="consent-lpdp"
+            className="group flex max-w-2xl items-start gap-3 rounded-xl border border-border/60 bg-secondary/40 backdrop-blur-sm px-4 py-3 text-left cursor-pointer transition-all duration-200 hover:border-primary/30 hover:bg-secondary/60"
+          >
+            <Checkbox
+              id="consent-lpdp"
+              checked={consentGiven}
+              onCheckedChange={(v) => setConsentGiven(v === true)}
+              className="mt-0.5 shrink-0 border-primary/40 data-[state=checked]:bg-primary data-[state=checked]:text-primary-foreground"
+            />
+            <span className="text-xs leading-relaxed text-muted-foreground">
+              <ShieldCheck className="inline h-3.5 w-3.5 text-primary mr-1 -mt-0.5" />
+              Declaro contar con el consentimiento del candidato para el tratamiento de sus datos personales, en estricto cumplimiento de la Ley de Protección de Datos Personales, exclusivamente para fines de evaluación técnica.
+            </span>
+          </label>
+
+          <Button
+            variant="hero"
+            disabled={(!file || !jobDescription.trim()) || isAnalyzing || !consentGiven}
+            onClick={handleAnalyze}
+            className="rounded-xl px-8 h-12 text-base font-semibold shadow-[0_0_24px_hsl(158_100%_42%_/_0.3)] hover:shadow-[0_0_32px_hsl(158_100%_42%_/_0.45)] transition-all duration-300"
+          >
             {isAnalyzing ? (
               <>
                 <Loader2 className="h-5 w-5 animate-spin" />
@@ -195,7 +218,11 @@ const HeroSection = ({ onAnalysisComplete }: HeroSectionProps) => {
               "Analizar perfil técnico"
             )}
           </Button>
-          <p className="mt-3 text-xs text-muted-foreground">Uso interno · Resultado en ~15 segundos</p>
+          <p className="text-xs text-muted-foreground">
+            {consentGiven
+              ? "Uso interno · Resultado en ~15 segundos"
+              : "Marca la casilla de consentimiento para habilitar el análisis"}
+          </p>
         </div>
       </div>
     </section>
