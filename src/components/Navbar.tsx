@@ -7,8 +7,8 @@ const Navbar = () => (
         <div className="flex h-7 w-7 items-center justify-center rounded-lg border border-primary/25 bg-primary/10 transition-all duration-300 group-hover:bg-primary/15 group-hover:border-primary/40">
           <Zap className="h-3.5 w-3.5 text-primary" />
         </div>
-        <span className="text-sm font-semibold tracking-tight">
-          CV<span className="text-primary">Optimizer</span>
+        <span className="text-sm font-semibold tracking-tight whitespace-nowrap">
+          TechScreen AI <span className="text-muted-foreground">·</span> <span className="text-primary">TA Portal</span>
         </span>
       </a>
       <nav className="hidden md:flex items-center gap-1 text-sm text-muted-foreground">
