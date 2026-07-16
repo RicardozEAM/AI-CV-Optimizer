@@ -1,5 +1,6 @@
-import { AlertTriangle, XCircle, Info } from "lucide-react";
+import { AlertTriangle, XCircle, Info, ShieldCheck } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import type { CVAnalysisResult } from "@/lib/types";
 
 interface ResultsSectionProps {
