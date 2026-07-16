@@ -127,7 +127,23 @@ function ScoreCard({ visible, isPlaceholder, score, scoreColor, scoreLabel, offs
       } ${isPlaceholder ? "opacity-50" : ""}`}
       style={{ transitionDelay: "200ms" }}
     >
-      <h3 className="text-xs font-semibold text-primary mb-6 uppercase tracking-widest">Match Score</h3>
+      <h3 className="text-xs font-semibold text-primary mb-3 uppercase tracking-widest">Match Score</h3>
+      <TooltipProvider delayDuration={150}>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <span
+              tabIndex={0}
+              className="inline-flex items-center gap-1.5 rounded-full border border-primary/25 bg-primary/8 px-2.5 py-0.5 text-[10px] font-medium text-primary mb-4 cursor-help focus:outline-none focus:ring-2 focus:ring-primary/30"
+            >
+              <ShieldCheck className="h-3 w-3" />
+              <span className="whitespace-nowrap">Procesamiento Anonimizado Activo</span>
+            </span>
+          </TooltipTrigger>
+          <TooltipContent side="top" className="max-w-xs text-xs leading-relaxed">
+            La IA omite automáticamente DNI, dirección, estado civil y fotografía durante el análisis para garantizar una revisión basada netamente en competencias.
+          </TooltipContent>
+        </Tooltip>
+      </TooltipProvider>
       <div className="relative mx-auto w-36 h-36">
         <svg className="w-full h-full -rotate-90" viewBox="0 0 100 100">
           <circle cx="50" cy="50" r="45" fill="none" stroke="hsl(var(--border))" strokeWidth="6" />
