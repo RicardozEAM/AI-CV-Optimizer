@@ -89,28 +89,17 @@ const HeroSection = ({ onAnalysisComplete }: HeroSectionProps) => {
   };
 
   return (
-    <section className="relative overflow-hidden py-20 md:py-32">
-      {/* Animated background orbs */}
-      <div className="pointer-events-none absolute inset-0">
-        <div className="orb orb-1" />
-        <div className="orb orb-2" />
-        <div className="orb orb-3" />
-      </div>
-
-      {/* Grid overlay */}
-      <div className="pointer-events-none absolute inset-0 bg-grid bg-grid-fade" />
-
-      <div className="container relative z-10">
-        <div className="mx-auto max-w-3xl text-center mb-12 opacity-0 animate-fade-up">
-          <div className="inline-flex items-center gap-2 rounded-full border border-primary/25 bg-primary/10 px-4 py-1.5 text-xs font-medium text-primary mb-6 shadow-[0_0_16px_hsl(158_100%_42%_/_0.1)]">
-            <Sparkles className="h-3.5 w-3.5 animate-pulse" />
+    <section className="relative border-b border-border bg-background py-16 md:py-24">
+      <div className="container relative">
+        <div className="mx-auto max-w-3xl text-center mb-12">
+          <div className="inline-flex items-center gap-2 rounded-full border border-border bg-card px-3 py-1 text-xs font-medium text-muted-foreground mb-6">
+            <Sparkles className="h-3.5 w-3.5 text-primary" />
             TechScreen AI · TA Portal
           </div>
-          <h1 className="text-5xl font-extrabold tracking-tight text-foreground md:text-7xl text-balance" style={{ lineHeight: 1.05 }}>
-            Estandariza perfiles{" "}
-            <span className="text-primary drop-shadow-[0_0_30px_hsl(158_100%_42%_/_0.4)]">técnicos</span>
+          <h1 className="text-4xl md:text-5xl font-bold tracking-tight text-foreground text-balance" style={{ lineHeight: 1.1 }}>
+            Estandariza perfiles <span className="text-primary">técnicos</span>
           </h1>
-          <p className="mt-5 text-lg text-muted-foreground text-pretty max-w-xl mx-auto">
+          <p className="mt-5 text-base md:text-lg text-muted-foreground text-pretty max-w-2xl mx-auto">
             Herramienta interna para reclutadores IT: analiza perfiles técnicos, identifica brechas y estandariza CVs para presentar a gerencia y clientes.
           </p>
         </div>
@@ -186,16 +175,16 @@ const HeroSection = ({ onAnalysisComplete }: HeroSectionProps) => {
           </div>
         </div>
 
-        <div className="mt-8 flex flex-col items-center gap-4 opacity-0 animate-fade-up" style={{ animationDelay: "300ms" }}>
+        <div className="mt-8 flex flex-col items-center gap-4">
           <label
             htmlFor="consent-lpdp"
-            className="group flex max-w-2xl items-start gap-3 rounded-xl border border-border/60 bg-secondary/40 backdrop-blur-sm px-4 py-3 text-left cursor-pointer transition-all duration-200 hover:border-primary/30 hover:bg-secondary/60"
+            className="group flex max-w-2xl items-start gap-3 rounded-lg border border-border bg-card px-4 py-3 text-left cursor-pointer transition-colors hover:border-primary/40"
           >
             <Checkbox
               id="consent-lpdp"
               checked={consentGiven}
               onCheckedChange={(v) => setConsentGiven(v === true)}
-              className="mt-0.5 shrink-0 border-primary/40 data-[state=checked]:bg-primary data-[state=checked]:text-primary-foreground"
+              className="mt-0.5 shrink-0"
             />
             <span className="text-xs leading-relaxed text-muted-foreground">
               <ShieldCheck className="inline h-3.5 w-3.5 text-primary mr-1 -mt-0.5" />
@@ -207,7 +196,6 @@ const HeroSection = ({ onAnalysisComplete }: HeroSectionProps) => {
             variant="hero"
             disabled={(!file || !jobDescription.trim()) || isAnalyzing || !consentGiven}
             onClick={handleAnalyze}
-            className="rounded-xl px-8 h-12 text-base font-semibold shadow-[0_0_24px_hsl(158_100%_42%_/_0.3)] hover:shadow-[0_0_32px_hsl(158_100%_42%_/_0.45)] transition-all duration-300"
           >
             {isAnalyzing ? (
               <>

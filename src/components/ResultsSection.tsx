@@ -31,9 +31,9 @@ const ResultsSection = ({ result }: ResultsSectionProps) => {
   const offset = isPlaceholder ? CIRCUMFERENCE : CIRCUMFERENCE - (score / 100) * CIRCUMFERENCE;
 
   const scoreColor = score >= 75
-    ? "hsl(158 100% 42%)"
+    ? "hsl(243 75% 59%)"
     : score >= 50
-    ? "hsl(35 95% 55%)"
+    ? "hsl(32 95% 44%)"
     : "hsl(0 72% 60%)";
 
   const scoreLabel = score >= 75 ? "Competitivo" : score >= 50 ? "Necesita mejoras" : "Necesita mejoras significativas";
@@ -57,13 +57,8 @@ const ResultsSection = ({ result }: ResultsSectionProps) => {
   };
 
   return (
-    <section ref={sectionRef} className="relative py-20 md:py-28 bg-background overflow-hidden">
-      {/* Background glow */}
-      <div className="pointer-events-none absolute inset-0">
-        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[500px] h-[250px] rounded-full bg-primary/5 blur-[100px]" />
-      </div>
-
-      <div className="container relative z-10">
+    <section ref={sectionRef} className="relative py-16 md:py-20 bg-background border-b border-border">
+      <div className="container">
         <div className={`text-center mb-16 transition-all duration-700 ${visible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-5"}`}>
           <div className="inline-flex items-center gap-2 rounded-full border border-primary/20 bg-primary/8 px-4 py-1.5 text-xs font-medium text-primary mb-4">
             <span className="h-1.5 w-1.5 rounded-full bg-primary" />
@@ -155,7 +150,7 @@ function ScoreCard({ visible, isPlaceholder, score, scoreColor, scoreLabel, offs
             strokeDasharray={circumference}
             strokeDashoffset={visible ? offset : circumference}
             className="transition-all duration-[1.2s] ease-out"
-            style={!isPlaceholder && score >= 75 ? { filter: "drop-shadow(0 0 6px hsl(158 100% 42% / 0.5))" } : {}}
+            style={{}}
           />
         </svg>
         <div className="absolute inset-0 flex flex-col items-center justify-center">
@@ -172,9 +167,9 @@ function ScoreCard({ visible, isPlaceholder, score, scoreColor, scoreLabel, offs
 
       {scoringDetails && (
         <div className="mt-6 space-y-2.5 text-left">
-          <ScoreBar label="Keywords" value={scoringDetails.keywords} max={30} color="hsl(158 100% 42%)" />
-          <ScoreBar label="Experiencia" value={scoringDetails.experience} max={40} color={scoringDetails.experience >= 30 ? "hsl(158 100% 42%)" : "hsl(35 95% 55%)"} />
-          <ScoreBar label="Estructura" value={scoringDetails.structure} max={30} color="hsl(158 100% 42%)" />
+          <ScoreBar label="Keywords" value={scoringDetails.keywords} max={30} color="hsl(243 75% 59%)" />
+          <ScoreBar label="Experiencia" value={scoringDetails.experience} max={40} color={scoringDetails.experience >= 30 ? "hsl(243 75% 59%)" : "hsl(32 95% 44%)"} />
+          <ScoreBar label="Estructura" value={scoringDetails.structure} max={30} color="hsl(243 75% 59%)" />
         </div>
       )}
     </div>

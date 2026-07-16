@@ -36,13 +36,8 @@ const StepFlowSection = () => {
   }, []);
 
   return (
-    <section ref={sectionRef} className="relative py-20 md:py-28 overflow-hidden">
-      {/* Subtle background accent */}
-      <div className="pointer-events-none absolute inset-0">
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[300px] rounded-full bg-primary/4 blur-[120px]" />
-      </div>
-
-      <div className="container relative z-10">
+    <section ref={sectionRef} className="relative py-16 md:py-24 border-b border-border">
+      <div className="container relative">
         <div className={`text-center mb-16 transition-all duration-700 ${visible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-5"}`}>
           <div className="inline-flex items-center gap-2 rounded-full border border-primary/20 bg-primary/8 px-4 py-1.5 text-xs font-medium text-primary mb-4">
             <span className="h-1.5 w-1.5 rounded-full bg-primary" />
@@ -73,7 +68,7 @@ const StepFlowSection = () => {
                 </span>
 
                 {/* Icon */}
-                <div className="flex h-11 w-11 items-center justify-center rounded-xl border border-primary/20 bg-primary/8 mb-5 transition-all duration-300 group-hover:bg-primary/15 group-hover:border-primary/30 group-hover:shadow-[0_0_16px_hsl(158_100%_42%_/_0.1)]">
+                <div className="flex h-11 w-11 items-center justify-center rounded-lg border border-border bg-secondary mb-5 transition-colors group-hover:bg-accent group-hover:border-primary/30">
                   <Icon className="h-5 w-5 text-primary" />
                 </div>
 
@@ -86,7 +81,7 @@ const StepFlowSection = () => {
 
                 {/* Connector arrow */}
                 {i < steps.length - 1 && (
-                  <div className="hidden md:flex absolute -right-3 top-1/2 -translate-y-1/2 z-10 h-7 w-7 items-center justify-center rounded-full border border-primary/20 bg-card text-primary transition-all duration-300 group-hover:border-primary/40 group-hover:shadow-[0_0_12px_hsl(158_100%_42%_/_0.15)]">
+                  <div className="hidden md:flex absolute -right-3 top-1/2 -translate-y-1/2 z-10 h-7 w-7 items-center justify-center rounded-full border border-border bg-card text-muted-foreground transition-colors group-hover:border-primary/40 group-hover:text-primary">
                     <ArrowRight className="h-3.5 w-3.5" />
                   </div>
                 )}

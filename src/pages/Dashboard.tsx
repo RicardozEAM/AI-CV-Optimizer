@@ -137,12 +137,8 @@ const Dashboard = () => {
   };
 
   return (
-    <section ref={dashboardRef} className="relative py-16 md:py-20 bg-background overflow-hidden">
-      <div className="pointer-events-none absolute inset-0">
-        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[600px] h-[280px] rounded-full bg-primary/5 blur-[120px]" />
-      </div>
-
-      <div className="container relative z-10">
+    <section ref={dashboardRef} className="relative py-16 md:py-20 bg-background">
+      <div className="container">
         {/* Header */}
         <div className="flex flex-wrap items-start justify-between gap-4 mb-10">
           <div>
@@ -213,8 +209,8 @@ const Dashboard = () => {
                 <BarChart data={recruiterVolume} margin={{ top: 10, right: 10, left: -10, bottom: 0 }}>
                   <defs>
                     <linearGradient id="barGrad" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="0%" stopColor="hsl(158 100% 42%)" stopOpacity={0.95} />
-                      <stop offset="100%" stopColor="hsl(158 100% 42%)" stopOpacity={0.35} />
+                      <stop offset="0%" stopColor="hsl(243 75% 59%)" stopOpacity={0.95} />
+                      <stop offset="100%" stopColor="hsl(243 75% 59%)" stopOpacity={0.35} />
                     </linearGradient>
                   </defs>
                   <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" vertical={false} />
