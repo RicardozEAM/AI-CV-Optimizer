@@ -1,5 +1,5 @@
 import * as pdfjsLib from "pdfjs-dist";
-// @ts-expect-error - Vite ?url import for bundled worker
+// Vite ?url import for bundled worker (matches installed pdfjs-dist version)
 import pdfWorkerUrl from "pdfjs-dist/build/pdf.worker.min.mjs?url";
 import JSZip from "jszip";
 
