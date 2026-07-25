@@ -36,6 +36,7 @@ interface AppState {
   submittedAnswers: Record<string, string> | null;
   previousScore: number | null;
   pendingOptimizedCv: CVAnalysisResult["optimized_cv"] | null;
+  sessionId: string | null;
 }
 
 // ─── Error Boundary ───────────────────────────────────────────────────────────
