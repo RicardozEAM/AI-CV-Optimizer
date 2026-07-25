@@ -139,7 +139,7 @@ serve(async (req: Request): Promise<Response> => {
     updated_score: payload.updated_score ?? null,
     harvard_generated: payload.harvard_generated ?? false,
     anonimized: payload.anonimized ?? true,
-    recruiter_email: payload.recruiter_email ?? null,
+    recruiter_email: payload.recruiter_email ?? "ricardo.aguero@techscreen.ai",
     answers: payload.answers ? JSON.stringify(payload.answers) : null,
   };
 
