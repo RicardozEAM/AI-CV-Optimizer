@@ -1,5 +1,5 @@
 import * as pdfjsLib from "pdfjs-dist";
-import mammoth from "mammoth";
+import JSZip from "jszip";
 
 pdfjsLib.GlobalWorkerOptions.workerSrc = `https://cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjsLib.version}/pdf.worker.min.mjs`;
 
@@ -32,11 +32,86 @@ export async function extractTextFromPdf(file: File): Promise<string> {
 export async function extractTextFromDocx(file: File): Promise<string> {
   const arrayBuffer = await file.arrayBuffer();
   try {
-    const result = await mammoth.extractRawText({ arrayBuffer });
-    return result.value;
-  } catch {
+    const zip = await JSZip.loadAsync(arrayBuffer);
+    const documentFile = zip.file("word/document.xml");
+
+    if (!documentFile) {
+      throw new Error("missing-document");
+    }
+
+    const xml = await documentFile.async("text");
+    const documentXml = new DOMParser().parseFromString(xml, "application/xml");
+
+    if (documentXml.getElementsByTagName("parsererror").length > 0) {
+      throw new Error("invalid-xml");
+    }
+
+    const body = Array.from(documentXml.getElementsByTagName("*")).find(
+      (element) => element.localName === "body"
+    );
+    const paragraphs = Array.from((body ?? documentXml.documentElement).getElementsByTagName("*")).filter(
+      (element) => element.localName === "p"
+    );
+
+    const text = paragraphs
+      .map(extractParagraphText)
+      .filter(Boolean)
+      .join("\n")
+      .replace(/\n{3,}/g, "\n\n")
+      .trim();
+
+    if (!text) {
+      throw new Error("empty-document");
+    }
+
+    return text;
+  } catch (error) {
+    if (error instanceof Error && error.message === "empty-document") {
+      throw new Error("El archivo Word no contiene texto legible. Sube un CV con texto seleccionable en formato DOCX o PDF.");
+    }
     throw new Error("No se pudo leer el archivo Word. Asegúrate de que sea un .docx válido (no .doc antiguo) y vuelve a intentarlo.");
   }
+}
+
+function extractParagraphText(paragraph: Element): string {
+  const chunks: string[] = [];
+
+  function walk(node: Node) {
+    Array.from(node.childNodes).forEach((child) => {
+      if (child.nodeType !== Node.ELEMENT_NODE) {
+        return;
+      }
+
+      const element = child as Element;
+      const localName = element.localName;
+
+      if (localName === "t" || localName === "delText") {
+        chunks.push(element.textContent ?? "");
+        return;
+      }
+
+      if (localName === "tab") {
+        chunks.push("\t");
+        return;
+      }
+
+      if (localName === "br" || localName === "cr") {
+        chunks.push("\n");
+        return;
+      }
+
+      walk(element);
+    });
+  }
+
+  walk(paragraph);
+
+  return chunks
+    .join("")
+    .replace(/\u00a0/g, " ")
+    .replace(/[ \t]+\n/g, "\n")
+    .replace(/\n[ \t]+/g, "\n")
+    .trim();
 }
 
 export async function extractText(file: File): Promise<string> {
