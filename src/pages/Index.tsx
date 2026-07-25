@@ -129,6 +129,7 @@ const Index = () => {
     submittedAnswers: null,
     previousScore: null,
     pendingOptimizedCv: null,
+    sessionId: null,
   });
 
   const cvTextRef = useRef("");
