@@ -32,6 +32,8 @@ interface AppState {
   analysisResult: CVAnalysisResult | null;
   isRegenerating: boolean;
   submittedAnswers: Record<string, string> | null;
+  previousScore: number | null;
+  pendingOptimizedCv: CVAnalysisResult["optimized_cv"] | null;
 }
 
 // ─── Error Boundary ───────────────────────────────────────────────────────────
