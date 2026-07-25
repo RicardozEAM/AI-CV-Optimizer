@@ -109,6 +109,8 @@ const Index = () => {
     analysisResult: null,
     isRegenerating: false,
     submittedAnswers: null,
+    previousScore: null,
+    pendingOptimizedCv: null,
   });
 
   const cvTextRef = useRef("");
@@ -122,15 +124,21 @@ const Index = () => {
       }
       setState((s) => ({
         ...s,
-        phase: "complete",
+        phase: "reviewing_improvements",
+        previousScore: s.analysisResult?.analysis.match_score ?? null,
         analysisResult: {
           ...result,
           validation_questions: s.analysisResult?.validation_questions ?? result.validation_questions,
+          // Ocultamos el CV Harvard hasta que el reclutador lo solicite explícitamente
+          optimized_cv: result.optimized_cv?.header
+            ? ({ header: result.optimized_cv.header, summary: "", skill_grid: [], work_experience: [], education: [], certifications: [] })
+            : null,
         },
+        pendingOptimizedCv: result.optimized_cv,
         submittedAnswers: answers,
       }));
       setTimeout(() => {
-        document.getElementById("cv-optimizado")?.scrollIntoView({ behavior: "smooth" });
+        document.getElementById("mejoras")?.scrollIntoView({ behavior: "smooth" });
       }, 300);
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : "Intenta de nuevo.";
@@ -138,6 +146,7 @@ const Index = () => {
       setState((s) => ({ ...s, phase: "awaiting_answers" }));
     }
   }, []);
+
 
   const handleAnalysisComplete = useCallback(
     (result: CVAnalysisResult, cvText?: string, jdText?: string) => {
