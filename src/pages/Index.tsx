@@ -210,6 +210,8 @@ const Index = () => {
         },
         isRegenerating: false,
         submittedAnswers: null,
+        previousScore: null,
+        pendingOptimizedCv: null,
       });
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : "Intenta de nuevo.";
