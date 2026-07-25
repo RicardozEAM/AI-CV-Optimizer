@@ -35,17 +35,19 @@ function validateBody(body: unknown): SessionPayload {
 
   const b = body as Record<string, unknown>;
 
+  const hasSessionId = isNonEmptyString(b.session_id);
+
   if (!isNonEmptyString(b.position)) {
     throw new Error('El campo "position" es obligatorio y debe ser texto');
   }
 
-  if (!isValidNumber(b.initial_score)) {
+  if (!hasSessionId && !isValidNumber(b.initial_score)) {
     throw new Error('El campo "initial_score" es obligatorio y debe ser un número');
   }
 
   const payload: SessionPayload = {
     position: b.position.trim(),
-    initial_score: Math.round(b.initial_score),
+    initial_score: isValidNumber(b.initial_score) ? Math.round(b.initial_score) : 0,
   };
 
   if (isNonEmptyString(b.session_id)) {
