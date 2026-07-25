@@ -295,7 +295,7 @@ const Index = () => {
     }
   }, []);
 
-  const handleRevealHarvardCv = useCallback(() => {
+  const handleRevealHarvardCv = useCallback(async () => {
     setState((s) => {
       if (!s.pendingOptimizedCv || !s.analysisResult) return s;
       return {
@@ -304,10 +304,25 @@ const Index = () => {
         analysisResult: { ...s.analysisResult, optimized_cv: s.pendingOptimizedCv },
       };
     });
+
+    try {
+      if (state.sessionId) {
+        await saveAnalysisSession({
+          session_id: state.sessionId,
+          position: jdTextRef.current.slice(0, 120),
+          harvard_generated: true,
+        });
+      }
+    } catch (persistErr) {
+      if (import.meta.env.DEV) {
+        console.error("[handleRevealHarvardCv] Persist error:", persistErr);
+      }
+    }
+
     setTimeout(() => {
       document.getElementById("cv-optimizado")?.scrollIntoView({ behavior: "smooth" });
     }, 300);
-  }, []);
+  }, [state.sessionId]);
 
   const questions = state.analysisResult?.validation_questions ?? [];
 
