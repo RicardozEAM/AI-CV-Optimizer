@@ -297,9 +297,15 @@ const Index = () => {
                       <Loader2 className="h-5 w-5 text-primary animate-spin" />
                     </div>
                     <div>
-                      <p className="text-sm font-semibold text-foreground">
-                        Generando CV estandarizado (formato Harvard)...
-                      </p>
+                      <RotatingPhrase
+                        phrases={[
+                          "Actualizando puntuación...",
+                          "Analizando potencial del candidato...",
+                          "Cruzando respuestas con la vacante...",
+                          "Recalibrando keywords detectadas...",
+                          "Consolidando nueva evidencia técnica...",
+                        ]}
+                      />
                       <p className="text-xs text-muted-foreground">Esto puede tomar unos segundos</p>
                     </div>
                   </div>
