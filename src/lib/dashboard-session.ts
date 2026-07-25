@@ -4,7 +4,7 @@ export interface SaveSessionPayload {
   session_id?: string;
   position: string;
   candidate_name?: string;
-  initial_score: number;
+  initial_score?: number;
   updated_score?: number;
   harvard_generated?: boolean;
   anonimized?: boolean;
