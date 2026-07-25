@@ -174,12 +174,13 @@ const Index = () => {
     if (!cvTextRef.current || !jdTextRef.current) return;
     setState((s) => ({ ...s, isRegenerating: true }));
     try {
-      const result = await analyzeCv(cvTextRef.current, jdTextRef.current, AUTO_GENERATE_ANSWERS);
+      const result = await analyzeCv(cvTextRef.current, jdTextRef.current);
       if (!isValidAnalysisResult(result)) throw new Error("Respuesta inválida");
       setState({
-        phase: hasValidOptimizedCV(result) ? "complete" : "generating_cv",
-        analysisResult: result,
+        phase: "awaiting_answers",
+        analysisResult: { ...result, optimized_cv: null },
         isRegenerating: false,
+        submittedAnswers: null,
       });
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : "Intenta de nuevo.";
