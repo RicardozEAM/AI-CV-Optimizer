@@ -156,6 +156,27 @@ const Index = () => {
         pendingOptimizedCv: result.optimized_cv,
         submittedAnswers: answers,
       }));
+
+      // Persistir score actualizado y respuestas en el dashboard
+      try {
+        const sessionId = state.sessionId;
+        if (sessionId) {
+          await saveAnalysisSession({
+            session_id: sessionId,
+            position: jdTextRef.current.slice(0, 120),
+            candidate_name: result.optimized_cv?.header?.full_name,
+            initial_score: state.analysisResult?.analysis.match_score ?? result.analysis.match_score,
+            updated_score: result.analysis.match_score,
+            answers,
+            anonimized: true,
+          });
+        }
+      } catch (persistErr) {
+        if (import.meta.env.DEV) {
+          console.error("[generateOptimizedCv] Persist error:", persistErr);
+        }
+      }
+
       setTimeout(() => {
         document.getElementById("mejoras")?.scrollIntoView({ behavior: "smooth" });
       }, 300);
@@ -164,7 +185,7 @@ const Index = () => {
       toast({ title: "Error al generar CV", description: msg, variant: "destructive" });
       setState((s) => ({ ...s, phase: "awaiting_answers" }));
     }
-  }, []);
+  }, [state.sessionId, state.analysisResult]);
 
 
   const handleAnalysisComplete = useCallback(
