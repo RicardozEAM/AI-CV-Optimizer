@@ -50,4 +50,3 @@ export async function extractText(file: File): Promise<string> {
   }
   throw new Error("Formato no soportado. Sube un archivo PDF o DOCX.");
 }
-}
