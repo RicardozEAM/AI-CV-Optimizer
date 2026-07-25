@@ -54,9 +54,9 @@ const PhoneScreenGuide = ({
             <h3 className="text-sm font-semibold text-foreground">Guía de Phone Screen</h3>
             <p className="text-xs text-muted-foreground">
               {editable
-                ? "Registra las respuestas del candidato para enriquecer el CV Harvard y mejorar el score."
+                ? "Registra las respuestas del candidato para recalcular el score con la nueva evidencia."
                 : locked
-                ? "Respuestas registradas — se usaron para generar el CV Harvard."
+                ? "Respuestas registradas — se usaron para recalcular el score y generar el CV Harvard."
                 : "Preguntas sugeridas por la IA para validar el perfil durante la entrevista telefónica"}
             </p>
           </div>
@@ -124,23 +124,23 @@ const PhoneScreenGuide = ({
               {isSubmitting ? (
                 <>
                   <Loader2 className="h-4 w-4 animate-spin" />
-                  Generando CV Harvard...
+                  Recalculando score...
                 </>
               ) : (
                 <>
                   <Sparkles className="h-4 w-4" />
-                  Generar CV Harvard con respuestas
+                  Actualizar score con respuestas
                 </>
               )}
             </Button>
             <p className="text-[11px] text-muted-foreground text-center">
-              Las respuestas se sumarán al análisis para mejorar el score y enriquecer el CV estandarizado.
+              Se recalcula el match del candidato con la evidencia del Phone Screen. El CV Harvard se genera en el siguiente paso.
             </p>
           </div>
         ) : (
           <p className="mt-6 text-[11px] text-muted-foreground text-center">
             {locked
-              ? "Guía cerrada — el CV Harvard se generó con estas respuestas."
+              ? "Guía cerrada — estas respuestas se usaron para recalcular el score."
               : "Panel de solo lectura — úsalo como guion de referencia durante la llamada con el candidato."}
           </p>
         )}
