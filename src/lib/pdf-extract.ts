@@ -9,7 +9,7 @@ export async function extractTextFromPdf(file: File): Promise<string> {
   const arrayBuffer = await file.arrayBuffer();
   let pdf: Awaited<ReturnType<typeof pdfjsLib.getDocument>["promise"]>;
   try {
-    pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
+    pdf = await pdfjsLib.getDocument({ data: new Uint8Array(arrayBuffer) }).promise;
   } catch (err: unknown) {
     const msg = err instanceof Error ? err.message.toLowerCase() : "";
     if (msg.includes("password") || msg.includes("encrypted")) {
@@ -21,14 +21,46 @@ export async function extractTextFromPdf(file: File): Promise<string> {
 
   for (let i = 1; i <= pdf.numPages; i++) {
     const page = await pdf.getPage(i);
-    const content = await page.getTextContent();
-    const text = content.items
-      .map((item: any) => item.str)
+    const content = await getPdfTextContent(page);
+    const text = content
+      .map((item) => item.str)
+      .filter(Boolean)
       .join(" ");
     pages.push(text);
   }
 
   return pages.join("\n\n");
+}
+
+type PdfTextItem = { str?: string };
+
+async function getPdfTextContent(page: Awaited<ReturnType<Awaited<ReturnType<typeof pdfjsLib.getDocument>["promise"]>["getPage"]>>): Promise<PdfTextItem[]> {
+  const streamTextContent = (page as unknown as {
+    streamTextContent?: () => ReadableStream<{ items?: PdfTextItem[] }>;
+  }).streamTextContent;
+
+  if (!streamTextContent) {
+    const content = await page.getTextContent();
+    return content.items as PdfTextItem[];
+  }
+
+  const stream = streamTextContent.call(page);
+  const reader = stream.getReader();
+  const items: PdfTextItem[] = [];
+
+  try {
+    while (true) {
+      const { value, done } = await reader.read();
+      if (done) {
+        break;
+      }
+      items.push(...(value.items ?? []));
+    }
+  } finally {
+    reader.releaseLock();
+  }
+
+  return items;
 }
 
 export async function extractTextFromDocx(file: File): Promise<string> {
