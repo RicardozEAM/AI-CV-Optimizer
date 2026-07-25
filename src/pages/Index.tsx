@@ -14,6 +14,7 @@ import PhoneScreenGuide from "@/components/PhoneScreenGuide";
 import OptimizedCvPreview from "@/components/OptimizedCvPreview";
 import type { CVAnalysisResult } from "@/lib/types";
 import { analyzeCv } from "@/lib/analyze-cv";
+import { saveAnalysisSession } from "@/lib/dashboard-session";
 import { toast } from "@/hooks/use-toast";
 import { Loader2, RefreshCw, AlertTriangle, TrendingUp, ArrowRight, FileText } from "lucide-react";
 import { Button } from "@/components/ui/button";
