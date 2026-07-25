@@ -15,6 +15,7 @@ import OptimizedCvPreview from "@/components/OptimizedCvPreview";
 import type { CVAnalysisResult } from "@/lib/types";
 import { analyzeCv } from "@/lib/analyze-cv";
 import { saveAnalysisSession } from "@/lib/dashboard-session";
+import { getActiveRecruiter } from "@/lib/recruiter";
 import { toast } from "@/hooks/use-toast";
 import { Loader2, RefreshCw, AlertTriangle, TrendingUp, ArrowRight, FileText } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -169,6 +170,7 @@ const Index = () => {
             updated_score: result.analysis.match_score,
             answers,
             anonimized: true,
+            recruiter_email: getActiveRecruiter().email,
           });
         }
       } catch (persistErr) {
@@ -226,6 +228,7 @@ const Index = () => {
           candidate_name: result.optimized_cv?.header?.full_name,
           initial_score: result.analysis.match_score,
           anonimized: true,
+          recruiter_email: getActiveRecruiter().email,
         });
         if (saved.session_id) {
           setState((s) => ({ ...s, sessionId: saved.session_id }));
@@ -279,6 +282,7 @@ const Index = () => {
           candidate_name: result.optimized_cv?.header?.full_name,
           initial_score: result.analysis.match_score,
           anonimized: true,
+          recruiter_email: getActiveRecruiter().email,
         });
         if (saved.session_id) {
           setState((s) => ({ ...s, sessionId: saved.session_id }));

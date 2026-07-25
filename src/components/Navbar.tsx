@@ -1,5 +1,6 @@
 import { Zap, LineChart, ScanSearch } from "lucide-react";
 import { NavLink, Link } from "react-router-dom";
+import RecruiterSelector from "./RecruiterSelector";
 
 const Navbar = () => {
   const tabClass = ({ isActive }: { isActive: boolean }) =>
@@ -33,6 +34,9 @@ const Navbar = () => {
             <span className="hidden sm:inline">Dashboard ROI</span>
             <span className="sm:hidden">ROI</span>
           </NavLink>
+          <div className="ml-2 hidden md:block">
+            <RecruiterSelector />
+          </div>
         </nav>
       </div>
     </header>
