@@ -124,17 +124,17 @@ const PhoneScreenGuide = ({
               {isSubmitting ? (
                 <>
                   <Loader2 className="h-4 w-4 animate-spin" />
-                  Generando CV Harvard...
+                  Recalculando score...
                 </>
               ) : (
                 <>
                   <Sparkles className="h-4 w-4" />
-                  Generar CV Harvard con respuestas
+                  Actualizar score con respuestas
                 </>
               )}
             </Button>
             <p className="text-[11px] text-muted-foreground text-center">
-              Las respuestas se sumarán al análisis para mejorar el score y enriquecer el CV estandarizado.
+              Se recalcula el match del candidato con la evidencia del Phone Screen. El CV Harvard se genera en el siguiente paso.
             </p>
           </div>
         ) : (
