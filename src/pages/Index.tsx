@@ -149,7 +149,12 @@ const Index = () => {
       // El CV Harvard se genera solo cuando el reclutador envíe las respuestas del candidato.
       setState({
         phase: "awaiting_answers",
-        analysisResult: { ...result, optimized_cv: null },
+        analysisResult: {
+          ...result,
+          optimized_cv: result.optimized_cv?.header
+            ? ({ header: result.optimized_cv.header, summary: "", skill_grid: [], work_experience: [], education: [], certifications: [] })
+            : null,
+        },
         isRegenerating: false,
         submittedAnswers: null,
       });
@@ -178,7 +183,12 @@ const Index = () => {
       if (!isValidAnalysisResult(result)) throw new Error("Respuesta inválida");
       setState({
         phase: "awaiting_answers",
-        analysisResult: { ...result, optimized_cv: null },
+        analysisResult: {
+          ...result,
+          optimized_cv: result.optimized_cv?.header
+            ? ({ header: result.optimized_cv.header, summary: "", skill_grid: [], work_experience: [], education: [], certifications: [] })
+            : null,
+        },
         isRegenerating: false,
         submittedAnswers: null,
       });
