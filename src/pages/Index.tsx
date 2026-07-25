@@ -259,7 +259,7 @@ const Index = () => {
                     state.phase === "awaiting_answers" ? handleSubmitAnswers : undefined
                   }
                   isSubmitting={state.phase === "generating_cv"}
-                  locked={state.phase === "complete"}
+                  locked={state.phase === "reviewing_improvements" || state.phase === "complete"}
                   submittedAnswers={state.submittedAnswers}
                 />
               </ErrorBoundary>
