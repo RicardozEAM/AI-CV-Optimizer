@@ -220,6 +220,20 @@ const Index = () => {
     }
   }, []);
 
+  const handleRevealHarvardCv = useCallback(() => {
+    setState((s) => {
+      if (!s.pendingOptimizedCv || !s.analysisResult) return s;
+      return {
+        ...s,
+        phase: "complete",
+        analysisResult: { ...s.analysisResult, optimized_cv: s.pendingOptimizedCv },
+      };
+    });
+    setTimeout(() => {
+      document.getElementById("cv-optimizado")?.scrollIntoView({ behavior: "smooth" });
+    }, 300);
+  }, []);
+
   const questions = state.analysisResult?.validation_questions ?? [];
 
   return (
