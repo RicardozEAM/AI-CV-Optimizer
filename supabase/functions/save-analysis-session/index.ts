@@ -130,7 +130,7 @@ serve(async (req: Request): Promise<Response> => {
     );
   }
 
-  const record = {
+  const record: Record<string, unknown> = {
     position: payload.position,
     candidate_name: payload.candidate_name ?? null,
     initial_score: payload.initial_score,
@@ -141,16 +141,42 @@ serve(async (req: Request): Promise<Response> => {
     answers: payload.answers ? JSON.stringify(payload.answers) : null,
   };
 
-  const res = await fetch(`${supabaseUrl}/rest/v1/analysis_sessions`, {
-    method: "POST",
-    headers: {
-      apikey: supabaseKey,
-      Authorization: `Bearer ${supabaseKey}`,
-      "Content-Type": "application/json",
-      Prefer: "return=minimal",
-    },
-    body: JSON.stringify(record),
-  });
+  let res: Response;
+
+  if (payload.session_id) {
+    const updateBody: Record<string, unknown> = {};
+    if (payload.updated_score !== undefined) updateBody.updated_score = payload.updated_score;
+    if (payload.harvard_generated !== undefined) updateBody.harvard_generated = payload.harvard_generated;
+    if (payload.answers) updateBody.answers = record.answers;
+    if (payload.candidate_name !== undefined) updateBody.candidate_name = payload.candidate_name;
+    if (payload.position !== undefined) updateBody.position = payload.position;
+    if (payload.anonimized !== undefined) updateBody.anonimized = payload.anonimized;
+
+    res = await fetch(
+      `${supabaseUrl}/rest/v1/analysis_sessions?id=eq.${encodeURIComponent(payload.session_id)}`,
+      {
+        method: "PATCH",
+        headers: {
+          apikey: supabaseKey,
+          Authorization: `Bearer ${supabaseKey}`,
+          "Content-Type": "application/json",
+          Prefer: "return=minimal",
+        },
+        body: JSON.stringify(updateBody),
+      },
+    );
+  } else {
+    res = await fetch(`${supabaseUrl}/rest/v1/analysis_sessions`, {
+      method: "POST",
+      headers: {
+        apikey: supabaseKey,
+        Authorization: `Bearer ${supabaseKey}`,
+        "Content-Type": "application/json",
+        Prefer: "return=representation",
+      },
+      body: JSON.stringify(record),
+    });
+  }
 
   if (!res.ok) {
     const text = await res.text().catch(() => "(error no legible)");
@@ -160,5 +186,18 @@ serve(async (req: Request): Promise<Response> => {
     );
   }
 
-  return new Response(JSON.stringify({ saved: true }), { status: 200, headers: JSON_RESPONSE_HEADERS });
+  let sessionId = payload.session_id;
+  if (!sessionId) {
+    try {
+      const inserted = await res.json();
+      sessionId = Array.isArray(inserted) && inserted[0]?.id ? inserted[0].id : undefined;
+    } catch {
+      sessionId = undefined;
+    }
+  }
+
+  return new Response(
+    JSON.stringify({ saved: true, session_id: sessionId }),
+    { status: 200, headers: JSON_RESPONSE_HEADERS },
+  );
 });
