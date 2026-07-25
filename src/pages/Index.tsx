@@ -189,7 +189,7 @@ const Index = () => {
 
 
   const handleAnalysisComplete = useCallback(
-    (result: CVAnalysisResult, cvText?: string, jdText?: string) => {
+    async (result: CVAnalysisResult, cvText?: string, jdText?: string) => {
       if (!isValidAnalysisResult(result)) {
         toast({
           title: "Análisis incompleto",
