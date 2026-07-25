@@ -140,7 +140,7 @@ const PhoneScreenGuide = ({
         ) : (
           <p className="mt-6 text-[11px] text-muted-foreground text-center">
             {locked
-              ? "Guía cerrada — el CV Harvard se generó con estas respuestas."
+              ? "Guía cerrada — estas respuestas se usaron para recalcular el score."
               : "Panel de solo lectura — úsalo como guion de referencia durante la llamada con el candidato."}
           </p>
         )}
