@@ -19,12 +19,13 @@ import { Button } from "@/components/ui/button";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
-type OptimizationPhase = "idle" | "analyzing" | "generating_cv" | "complete";
+type OptimizationPhase = "idle" | "analyzing" | "awaiting_answers" | "generating_cv" | "complete";
 
 interface AppState {
   phase: OptimizationPhase;
   analysisResult: CVAnalysisResult | null;
   isRegenerating: boolean;
+  submittedAnswers: Record<string, string> | null;
 }
 
 // ─── Error Boundary ───────────────────────────────────────────────────────────
@@ -92,10 +93,6 @@ function hasValidOptimizedCV(result: CVAnalysisResult | null): boolean {
   return !!(cv.header && cv.summary && Array.isArray(cv.work_experience));
 }
 
-const AUTO_GENERATE_ANSWERS: Record<string, string> = {
-  auto: "Generar el CV Harvard estandarizado usando exclusivamente la información presente en el CV del candidato. No inventar datos, métricas ni logros que no estén explícitos.",
-};
-
 // ─── Component ────────────────────────────────────────────────────────────────
 
 const Index = () => {
@@ -103,21 +100,26 @@ const Index = () => {
     phase: "idle",
     analysisResult: null,
     isRegenerating: false,
+    submittedAnswers: null,
   });
 
   const cvTextRef = useRef("");
   const jdTextRef = useRef("");
 
-  const generateOptimizedCv = useCallback(async () => {
+  const generateOptimizedCv = useCallback(async (answers: Record<string, string>) => {
     try {
-      const result = await analyzeCv(cvTextRef.current, jdTextRef.current, AUTO_GENERATE_ANSWERS);
+      const result = await analyzeCv(cvTextRef.current, jdTextRef.current, answers);
       if (!isValidAnalysisResult(result) || !hasValidOptimizedCV(result)) {
         throw new Error("No se pudo generar el CV estandarizado");
       }
       setState((s) => ({
         ...s,
         phase: "complete",
-        analysisResult: { ...result, validation_questions: s.analysisResult?.validation_questions ?? result.validation_questions },
+        analysisResult: {
+          ...result,
+          validation_questions: s.analysisResult?.validation_questions ?? result.validation_questions,
+        },
+        submittedAnswers: answers,
       }));
       setTimeout(() => {
         document.getElementById("cv-optimizado")?.scrollIntoView({ behavior: "smooth" });
@@ -125,7 +127,7 @@ const Index = () => {
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : "Intenta de nuevo.";
       toast({ title: "Error al generar CV", description: msg, variant: "destructive" });
-      setState((s) => ({ ...s, phase: "complete" }));
+      setState((s) => ({ ...s, phase: "awaiting_answers" }));
     }
   }, []);
 
@@ -143,17 +145,27 @@ const Index = () => {
       if (cvText) cvTextRef.current = cvText;
       if (jdText) jdTextRef.current = jdText;
 
-      // If the first call already produced the standardized CV, skip the second call.
-      if (hasValidOptimizedCV(result)) {
-        setState({ phase: "complete", analysisResult: result, isRegenerating: false });
-        setTimeout(() => {
-          document.getElementById("cv-optimizado")?.scrollIntoView({ behavior: "smooth" });
-        }, 300);
-        return;
-      }
+      // Nuevo flujo: primero mostramos diagnóstico + Guía de Phone Screen.
+      // El CV Harvard se genera solo cuando el reclutador envíe las respuestas del candidato.
+      setState({
+        phase: "awaiting_answers",
+        analysisResult: { ...result, optimized_cv: null },
+        isRegenerating: false,
+        submittedAnswers: null,
+      });
 
-      setState({ phase: "generating_cv", analysisResult: result, isRegenerating: false });
-      generateOptimizedCv();
+      setTimeout(() => {
+        document.getElementById("resultados")?.scrollIntoView({ behavior: "smooth" });
+      }, 300);
+    },
+    [],
+  );
+
+  const handleSubmitAnswers = useCallback(
+    (answers: Record<string, string>) => {
+      if (!cvTextRef.current || !jdTextRef.current) return;
+      setState((s) => ({ ...s, phase: "generating_cv", submittedAnswers: answers }));
+      generateOptimizedCv(answers);
     },
     [generateOptimizedCv],
   );
@@ -162,12 +174,13 @@ const Index = () => {
     if (!cvTextRef.current || !jdTextRef.current) return;
     setState((s) => ({ ...s, isRegenerating: true }));
     try {
-      const result = await analyzeCv(cvTextRef.current, jdTextRef.current, AUTO_GENERATE_ANSWERS);
+      const result = await analyzeCv(cvTextRef.current, jdTextRef.current);
       if (!isValidAnalysisResult(result)) throw new Error("Respuesta inválida");
       setState({
-        phase: hasValidOptimizedCV(result) ? "complete" : "generating_cv",
-        analysisResult: result,
+        phase: "awaiting_answers",
+        analysisResult: { ...result, optimized_cv: null },
         isRegenerating: false,
+        submittedAnswers: null,
       });
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : "Intenta de nuevo.";
@@ -195,7 +208,15 @@ const Index = () => {
           <div className="bg-secondary/40 pb-12">
             <div className="container">
               <ErrorBoundary name="PhoneScreenGuide">
-                <PhoneScreenGuide questions={questions} />
+                <PhoneScreenGuide
+                  questions={questions}
+                  onSubmitAnswers={
+                    state.phase === "awaiting_answers" ? handleSubmitAnswers : undefined
+                  }
+                  isSubmitting={state.phase === "generating_cv"}
+                  locked={state.phase === "complete"}
+                  submittedAnswers={state.submittedAnswers}
+                />
               </ErrorBoundary>
             </div>
           </div>
