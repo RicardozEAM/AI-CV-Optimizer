@@ -174,6 +174,8 @@ const Index = () => {
         },
         isRegenerating: false,
         submittedAnswers: null,
+        previousScore: null,
+        pendingOptimizedCv: null,
       });
 
       setTimeout(() => {
