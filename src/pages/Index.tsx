@@ -170,6 +170,7 @@ const Index = () => {
             updated_score: result.analysis.match_score,
             answers,
             anonimized: true,
+            recruiter_email: getActiveRecruiter().email,
           });
         }
       } catch (persistErr) {
@@ -227,6 +228,7 @@ const Index = () => {
           candidate_name: result.optimized_cv?.header?.full_name,
           initial_score: result.analysis.match_score,
           anonimized: true,
+          recruiter_email: getActiveRecruiter().email,
         });
         if (saved.session_id) {
           setState((s) => ({ ...s, sessionId: saved.session_id }));
@@ -280,6 +282,7 @@ const Index = () => {
           candidate_name: result.optimized_cv?.header?.full_name,
           initial_score: result.analysis.match_score,
           anonimized: true,
+          recruiter_email: getActiveRecruiter().email,
         });
         if (saved.session_id) {
           setState((s) => ({ ...s, sessionId: saved.session_id }));
