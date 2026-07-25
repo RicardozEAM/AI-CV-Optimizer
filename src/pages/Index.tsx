@@ -14,18 +14,26 @@ import OptimizedCvPreview from "@/components/OptimizedCvPreview";
 import type { CVAnalysisResult } from "@/lib/types";
 import { analyzeCv } from "@/lib/analyze-cv";
 import { toast } from "@/hooks/use-toast";
-import { Loader2, RefreshCw, AlertTriangle } from "lucide-react";
+import { Loader2, RefreshCw, AlertTriangle, TrendingUp, ArrowRight, FileText } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
-type OptimizationPhase = "idle" | "analyzing" | "awaiting_answers" | "generating_cv" | "complete";
+type OptimizationPhase =
+  | "idle"
+  | "analyzing"
+  | "awaiting_answers"
+  | "generating_cv"
+  | "reviewing_improvements"
+  | "complete";
 
 interface AppState {
   phase: OptimizationPhase;
   analysisResult: CVAnalysisResult | null;
   isRegenerating: boolean;
   submittedAnswers: Record<string, string> | null;
+  previousScore: number | null;
+  pendingOptimizedCv: CVAnalysisResult["optimized_cv"] | null;
 }
 
 // ─── Error Boundary ───────────────────────────────────────────────────────────
@@ -101,6 +109,8 @@ const Index = () => {
     analysisResult: null,
     isRegenerating: false,
     submittedAnswers: null,
+    previousScore: null,
+    pendingOptimizedCv: null,
   });
 
   const cvTextRef = useRef("");
@@ -114,15 +124,21 @@ const Index = () => {
       }
       setState((s) => ({
         ...s,
-        phase: "complete",
+        phase: "reviewing_improvements",
+        previousScore: s.analysisResult?.analysis.match_score ?? null,
         analysisResult: {
           ...result,
           validation_questions: s.analysisResult?.validation_questions ?? result.validation_questions,
+          // Ocultamos el CV Harvard hasta que el reclutador lo solicite explícitamente
+          optimized_cv: result.optimized_cv?.header
+            ? ({ header: result.optimized_cv.header, summary: "", skill_grid: [], work_experience: [], education: [], certifications: [] })
+            : null,
         },
+        pendingOptimizedCv: result.optimized_cv,
         submittedAnswers: answers,
       }));
       setTimeout(() => {
-        document.getElementById("cv-optimizado")?.scrollIntoView({ behavior: "smooth" });
+        document.getElementById("mejoras")?.scrollIntoView({ behavior: "smooth" });
       }, 300);
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : "Intenta de nuevo.";
@@ -130,6 +146,7 @@ const Index = () => {
       setState((s) => ({ ...s, phase: "awaiting_answers" }));
     }
   }, []);
+
 
   const handleAnalysisComplete = useCallback(
     (result: CVAnalysisResult, cvText?: string, jdText?: string) => {
@@ -157,6 +174,8 @@ const Index = () => {
         },
         isRegenerating: false,
         submittedAnswers: null,
+        previousScore: null,
+        pendingOptimizedCv: null,
       });
 
       setTimeout(() => {
@@ -191,12 +210,28 @@ const Index = () => {
         },
         isRegenerating: false,
         submittedAnswers: null,
+        previousScore: null,
+        pendingOptimizedCv: null,
       });
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : "Intenta de nuevo.";
       toast({ title: "Error al regenerar", description: msg, variant: "destructive" });
       setState((s) => ({ ...s, isRegenerating: false }));
     }
+  }, []);
+
+  const handleRevealHarvardCv = useCallback(() => {
+    setState((s) => {
+      if (!s.pendingOptimizedCv || !s.analysisResult) return s;
+      return {
+        ...s,
+        phase: "complete",
+        analysisResult: { ...s.analysisResult, optimized_cv: s.pendingOptimizedCv },
+      };
+    });
+    setTimeout(() => {
+      document.getElementById("cv-optimizado")?.scrollIntoView({ behavior: "smooth" });
+    }, 300);
   }, []);
 
   const questions = state.analysisResult?.validation_questions ?? [];
@@ -224,7 +259,7 @@ const Index = () => {
                     state.phase === "awaiting_answers" ? handleSubmitAnswers : undefined
                   }
                   isSubmitting={state.phase === "generating_cv"}
-                  locked={state.phase === "complete"}
+                  locked={state.phase === "reviewing_improvements" || state.phase === "complete"}
                   submittedAnswers={state.submittedAnswers}
                 />
               </ErrorBoundary>
@@ -288,6 +323,117 @@ const Index = () => {
             </div>
           </div>
         )}
+
+        {state.phase === "reviewing_improvements" && state.analysisResult && (
+          <div id="mejoras" className="bg-secondary/40 pb-12">
+            <div className="container">
+              <div className="mx-auto max-w-5xl mt-8">
+                <div className="glass-card rounded-2xl p-8 shadow-sm">
+                  <div className="flex items-center gap-3 mb-6">
+                    <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary/10">
+                      <TrendingUp className="h-5 w-5 text-primary" />
+                    </div>
+                    <div>
+                      <h3 className="text-lg font-semibold text-foreground">
+                        Score actualizado con respuestas del candidato
+                      </h3>
+                      <p className="text-xs text-muted-foreground">
+                        Reanálisis del perfil incluyendo la evidencia recolectada en el Phone Screen
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="grid gap-4 sm:grid-cols-3 mb-6">
+                    <div className="rounded-xl border border-border bg-background p-4">
+                      <p className="text-xs uppercase tracking-wide text-muted-foreground">Score inicial</p>
+                      <p className="mt-2 text-3xl font-bold text-muted-foreground">
+                        {state.previousScore ?? "—"}
+                        <span className="text-base font-medium text-muted-foreground">%</span>
+                      </p>
+                    </div>
+                    <div className="rounded-xl border border-primary/30 bg-primary/5 p-4">
+                      <p className="text-xs uppercase tracking-wide text-primary">Score actualizado</p>
+                      <p className="mt-2 text-3xl font-bold text-primary">
+                        {state.analysisResult.analysis.match_score}
+                        <span className="text-base font-medium text-primary/80">%</span>
+                      </p>
+                    </div>
+                    <div className="rounded-xl border border-border bg-background p-4">
+                      <p className="text-xs uppercase tracking-wide text-muted-foreground">Variación</p>
+                      <p className="mt-2 text-3xl font-bold text-foreground flex items-center gap-1">
+                        {state.previousScore !== null ? (
+                          <>
+                            {state.analysisResult.analysis.match_score - state.previousScore >= 0 ? "+" : ""}
+                            {state.analysisResult.analysis.match_score - state.previousScore}
+                            <span className="text-base font-medium">pts</span>
+                          </>
+                        ) : (
+                          "—"
+                        )}
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="rounded-xl border border-border bg-background p-5 mb-6">
+                    <p className="text-sm font-semibold text-foreground mb-3">Detalle del reanálisis</p>
+                    <div className="grid gap-3 sm:grid-cols-3 text-sm">
+                      <div>
+                        <p className="text-xs text-muted-foreground">Keywords</p>
+                        <p className="font-semibold text-foreground">
+                          {state.analysisResult.analysis.scoring_details.keywords}%
+                        </p>
+                      </div>
+                      <div>
+                        <p className="text-xs text-muted-foreground">Experiencia</p>
+                        <p className="font-semibold text-foreground">
+                          {state.analysisResult.analysis.scoring_details.experience}%
+                        </p>
+                      </div>
+                      <div>
+                        <p className="text-xs text-muted-foreground">Estructura</p>
+                        <p className="font-semibold text-foreground">
+                          {state.analysisResult.analysis.scoring_details.structure}%
+                        </p>
+                      </div>
+                    </div>
+                    {state.analysisResult.analysis.keywords_detected.filter((k) => k.has_evidence).length > 0 && (
+                      <div className="mt-4">
+                        <p className="text-xs text-muted-foreground mb-2">
+                          Nueva evidencia validada en Phone Screen
+                        </p>
+                        <div className="flex flex-wrap gap-2">
+                          {state.analysisResult.analysis.keywords_detected
+                            .filter((k) => k.has_evidence)
+                            .slice(0, 12)
+                            .map((k) => (
+                              <span
+                                key={k.term}
+                                className="rounded-full border border-primary/30 bg-primary/5 px-3 py-1 text-xs font-medium text-primary"
+                              >
+                                {k.term}
+                              </span>
+                            ))}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+
+                  <div className="flex flex-col sm:flex-row items-center justify-between gap-3">
+                    <p className="text-xs text-muted-foreground">
+                      Cuando el score refleje el perfil real del candidato, genera el CV en formato Harvard.
+                    </p>
+                    <Button onClick={handleRevealHarvardCv} className="gap-2">
+                      <FileText className="h-4 w-4" />
+                      Generar CV Harvard
+                      <ArrowRight className="h-4 w-4" />
+                    </Button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
 
         {state.phase === "complete" && hasValidOptimizedCV(state.analysisResult) && (
           <div id="cv-optimizado" className="bg-secondary/40 pb-20">
