@@ -14,6 +14,7 @@ import PhoneScreenGuide from "@/components/PhoneScreenGuide";
 import OptimizedCvPreview from "@/components/OptimizedCvPreview";
 import type { CVAnalysisResult } from "@/lib/types";
 import { analyzeCv } from "@/lib/analyze-cv";
+import { saveAnalysisSession } from "@/lib/dashboard-session";
 import { toast } from "@/hooks/use-toast";
 import { Loader2, RefreshCw, AlertTriangle, TrendingUp, ArrowRight, FileText } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -35,6 +36,7 @@ interface AppState {
   submittedAnswers: Record<string, string> | null;
   previousScore: number | null;
   pendingOptimizedCv: CVAnalysisResult["optimized_cv"] | null;
+  sessionId: string | null;
 }
 
 // ─── Error Boundary ───────────────────────────────────────────────────────────
@@ -127,6 +129,7 @@ const Index = () => {
     submittedAnswers: null,
     previousScore: null,
     pendingOptimizedCv: null,
+    sessionId: null,
   });
 
   const cvTextRef = useRef("");
@@ -153,6 +156,27 @@ const Index = () => {
         pendingOptimizedCv: result.optimized_cv,
         submittedAnswers: answers,
       }));
+
+      // Persistir score actualizado y respuestas en el dashboard
+      try {
+        const sessionId = state.sessionId;
+        if (sessionId) {
+          await saveAnalysisSession({
+            session_id: sessionId,
+            position: jdTextRef.current.slice(0, 120),
+            candidate_name: result.optimized_cv?.header?.full_name,
+            initial_score: state.analysisResult?.analysis.match_score ?? result.analysis.match_score,
+            updated_score: result.analysis.match_score,
+            answers,
+            anonimized: true,
+          });
+        }
+      } catch (persistErr) {
+        if (import.meta.env.DEV) {
+          console.error("[generateOptimizedCv] Persist error:", persistErr);
+        }
+      }
+
       setTimeout(() => {
         document.getElementById("mejoras")?.scrollIntoView({ behavior: "smooth" });
       }, 300);
@@ -161,11 +185,11 @@ const Index = () => {
       toast({ title: "Error al generar CV", description: msg, variant: "destructive" });
       setState((s) => ({ ...s, phase: "awaiting_answers" }));
     }
-  }, []);
+  }, [state.sessionId, state.analysisResult]);
 
 
   const handleAnalysisComplete = useCallback(
-    (result: CVAnalysisResult, cvText?: string, jdText?: string) => {
+    async (result: CVAnalysisResult, cvText?: string, jdText?: string) => {
       if (!isValidAnalysisResult(result)) {
         toast({
           title: "Análisis incompleto",
@@ -192,7 +216,25 @@ const Index = () => {
         submittedAnswers: null,
         previousScore: null,
         pendingOptimizedCv: null,
+        sessionId: null,
       });
+
+      // Persistir sesión inicial de análisis en el dashboard
+      try {
+        const saved = await saveAnalysisSession({
+          position: jdTextRef.current.slice(0, 120),
+          candidate_name: result.optimized_cv?.header?.full_name,
+          initial_score: result.analysis.match_score,
+          anonimized: true,
+        });
+        if (saved.session_id) {
+          setState((s) => ({ ...s, sessionId: saved.session_id }));
+        }
+      } catch (persistErr) {
+        if (import.meta.env.DEV) {
+          console.error("[handleAnalysisComplete] Persist error:", persistErr);
+        }
+      }
 
       setTimeout(() => {
         document.getElementById("resultados")?.scrollIntoView({ behavior: "smooth" });
@@ -228,7 +270,24 @@ const Index = () => {
         submittedAnswers: null,
         previousScore: null,
         pendingOptimizedCv: null,
+        sessionId: null,
       });
+
+      try {
+        const saved = await saveAnalysisSession({
+          position: jdTextRef.current.slice(0, 120),
+          candidate_name: result.optimized_cv?.header?.full_name,
+          initial_score: result.analysis.match_score,
+          anonimized: true,
+        });
+        if (saved.session_id) {
+          setState((s) => ({ ...s, sessionId: saved.session_id }));
+        }
+      } catch (persistErr) {
+        if (import.meta.env.DEV) {
+          console.error("[handleRegenerate] Persist error:", persistErr);
+        }
+      }
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : "Intenta de nuevo.";
       toast({ title: "Error al regenerar", description: msg, variant: "destructive" });
@@ -236,7 +295,7 @@ const Index = () => {
     }
   }, []);
 
-  const handleRevealHarvardCv = useCallback(() => {
+  const handleRevealHarvardCv = useCallback(async () => {
     setState((s) => {
       if (!s.pendingOptimizedCv || !s.analysisResult) return s;
       return {
@@ -245,10 +304,25 @@ const Index = () => {
         analysisResult: { ...s.analysisResult, optimized_cv: s.pendingOptimizedCv },
       };
     });
+
+    try {
+      if (state.sessionId) {
+        await saveAnalysisSession({
+          session_id: state.sessionId,
+          position: jdTextRef.current.slice(0, 120),
+          harvard_generated: true,
+        });
+      }
+    } catch (persistErr) {
+      if (import.meta.env.DEV) {
+        console.error("[handleRevealHarvardCv] Persist error:", persistErr);
+      }
+    }
+
     setTimeout(() => {
       document.getElementById("cv-optimizado")?.scrollIntoView({ behavior: "smooth" });
     }, 300);
-  }, []);
+  }, [state.sessionId]);
 
   const questions = state.analysisResult?.validation_questions ?? [];
 

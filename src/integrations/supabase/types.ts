@@ -14,6 +14,48 @@ export type Database = {
   }
   public: {
     Tables: {
+      analysis_sessions: {
+        Row: {
+          anonimized: boolean
+          answers: Json | null
+          candidate_name: string | null
+          created_at: string
+          harvard_generated: boolean
+          id: string
+          initial_score: number
+          position: string
+          recruiter_email: string | null
+          updated_at: string
+          updated_score: number | null
+        }
+        Insert: {
+          anonimized?: boolean
+          answers?: Json | null
+          candidate_name?: string | null
+          created_at?: string
+          harvard_generated?: boolean
+          id?: string
+          initial_score: number
+          position: string
+          recruiter_email?: string | null
+          updated_at?: string
+          updated_score?: number | null
+        }
+        Update: {
+          anonimized?: boolean
+          answers?: Json | null
+          candidate_name?: string | null
+          created_at?: string
+          harvard_generated?: boolean
+          id?: string
+          initial_score?: number
+          position?: string
+          recruiter_email?: string | null
+          updated_at?: string
+          updated_score?: number | null
+        }
+        Relationships: []
+      }
       rate_limits: {
         Row: {
           count: number
