@@ -208,7 +208,15 @@ const Index = () => {
           <div className="bg-secondary/40 pb-12">
             <div className="container">
               <ErrorBoundary name="PhoneScreenGuide">
-                <PhoneScreenGuide questions={questions} />
+                <PhoneScreenGuide
+                  questions={questions}
+                  onSubmitAnswers={
+                    state.phase === "awaiting_answers" ? handleSubmitAnswers : undefined
+                  }
+                  isSubmitting={state.phase === "generating_cv"}
+                  locked={state.phase === "complete"}
+                  submittedAnswers={state.submittedAnswers}
+                />
               </ErrorBoundary>
             </div>
           </div>
