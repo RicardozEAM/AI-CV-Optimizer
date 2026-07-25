@@ -54,9 +54,9 @@ const PhoneScreenGuide = ({
             <h3 className="text-sm font-semibold text-foreground">Guía de Phone Screen</h3>
             <p className="text-xs text-muted-foreground">
               {editable
-                ? "Registra las respuestas del candidato para enriquecer el CV Harvard y mejorar el score."
+                ? "Registra las respuestas del candidato para recalcular el score con la nueva evidencia."
                 : locked
-                ? "Respuestas registradas — se usaron para generar el CV Harvard."
+                ? "Respuestas registradas — se usaron para recalcular el score y generar el CV Harvard."
                 : "Preguntas sugeridas por la IA para validar el perfil durante la entrevista telefónica"}
             </p>
           </div>
