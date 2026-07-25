@@ -165,16 +165,85 @@ const HeroSection = ({ onAnalysisComplete }: HeroSectionProps) => {
             <textarea
               value={jobDescription}
               onChange={(e) => setJobDescription(e.target.value.slice(0, MAX_JD_CHARS))}
-              placeholder="Pega aquí la descripción del puesto (ej. FullStack Web Developer Senior)..."
+              placeholder="Pega aquí la descripción del puesto o adjunta el documento (PDF/DOCX)..."
               className="w-full resize-none rounded-xl border border-input bg-secondary/50 p-4 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary/50 transition-all h-[140px]"
             />
-            <p className={`text-right text-[11px] mt-1 tabular-nums ${
-              jobDescription.length >= MAX_JD_CHARS
-                ? "text-destructive font-medium"
-                : "text-muted-foreground"
-            }`}>
-              {jobDescription.length}/{MAX_JD_CHARS}
-            </p>
+            <div className="mt-2 flex items-center justify-between gap-3">
+              {jdFile ? (
+                <div className="flex items-center gap-2 rounded-lg bg-primary/5 border border-primary/15 px-3 py-1.5 text-xs flex-1 min-w-0">
+                  <FileText className="h-3.5 w-3.5 text-primary shrink-0" />
+                  <span className="font-medium text-foreground truncate flex-1">{jdFile.name}</span>
+                  <button
+                    onClick={() => { setJdFile(null); setJobDescription(""); }}
+                    className="text-muted-foreground hover:text-foreground transition-colors shrink-0"
+                    aria-label="Quitar documento"
+                  >
+                    <X className="h-3.5 w-3.5" />
+                  </button>
+                </div>
+              ) : (
+                <button
+                  type="button"
+                  onClick={() => jdFileInputRef.current?.click()}
+                  disabled={isExtractingJd}
+                  className="inline-flex items-center gap-1.5 rounded-lg border border-dashed border-primary/25 bg-primary/5 px-3 py-1.5 text-xs font-medium text-foreground hover:border-primary/50 hover:bg-primary/10 transition-colors disabled:opacity-60"
+                >
+                  {isExtractingJd ? (
+                    <>
+                      <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                      Extrayendo texto...
+                    </>
+                  ) : (
+                    <>
+                      <Upload className="h-3.5 w-3.5 text-primary" />
+                      Adjuntar PDF o DOCX
+                    </>
+                  )}
+                </button>
+              )}
+              <p className={`text-right text-[11px] tabular-nums shrink-0 ${
+                jobDescription.length >= MAX_JD_CHARS
+                  ? "text-destructive font-medium"
+                  : "text-muted-foreground"
+              }`}>
+                {jobDescription.length}/{MAX_JD_CHARS}
+              </p>
+            </div>
+            <input
+              ref={jdFileInputRef}
+              type="file"
+              accept=".pdf,.docx,.doc"
+              className="hidden"
+              onChange={async (e) => {
+                const selected = e.target.files?.[0];
+                e.target.value = "";
+                if (!selected) return;
+                if (!isValidFile(selected)) {
+                  toast({ title: "Formato no válido", description: "Solo se aceptan archivos PDF o DOCX.", variant: "destructive" });
+                  return;
+                }
+                if (selected.size > MAX_FILE_SIZE_MB * 1024 * 1024) {
+                  toast({ title: "Archivo muy grande", description: `El archivo no debe superar ${MAX_FILE_SIZE_MB}MB.`, variant: "destructive" });
+                  return;
+                }
+                setIsExtractingJd(true);
+                try {
+                  const text = await extractText(selected);
+                  if (!text.trim()) {
+                    toast({ title: "Documento vacío", description: "No se pudo extraer texto del documento. Verifica que no sea una imagen escaneada.", variant: "destructive" });
+                    return;
+                  }
+                  setJobDescription(text.slice(0, MAX_JD_CHARS));
+                  setJdFile(selected);
+                  toast({ title: "Documento cargado", description: "Se extrajo la descripción del puesto correctamente." });
+                } catch (err: unknown) {
+                  const msg = err instanceof Error ? err.message : "No se pudo procesar el documento.";
+                  toast({ title: "Error al leer el documento", description: msg, variant: "destructive" });
+                } finally {
+                  setIsExtractingJd(false);
+                }
+              }}
+            />
           </div>
         </div>
 
