@@ -14,12 +14,18 @@ import OptimizedCvPreview from "@/components/OptimizedCvPreview";
 import type { CVAnalysisResult } from "@/lib/types";
 import { analyzeCv } from "@/lib/analyze-cv";
 import { toast } from "@/hooks/use-toast";
-import { Loader2, RefreshCw, AlertTriangle } from "lucide-react";
+import { Loader2, RefreshCw, AlertTriangle, TrendingUp, ArrowRight, FileText } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
-type OptimizationPhase = "idle" | "analyzing" | "awaiting_answers" | "generating_cv" | "complete";
+type OptimizationPhase =
+  | "idle"
+  | "analyzing"
+  | "awaiting_answers"
+  | "generating_cv"
+  | "reviewing_improvements"
+  | "complete";
 
 interface AppState {
   phase: OptimizationPhase;
