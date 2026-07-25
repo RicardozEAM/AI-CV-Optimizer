@@ -24,9 +24,12 @@ const HeroSection = ({ onAnalysisComplete }: HeroSectionProps) => {
   const [file, setFile] = useState<File | null>(null);
   const [isDragging, setIsDragging] = useState(false);
   const [jobDescription, setJobDescription] = useState("");
+  const [jdFile, setJdFile] = useState<File | null>(null);
+  const [isExtractingJd, setIsExtractingJd] = useState(false);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [consentGiven, setConsentGiven] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const jdFileInputRef = useRef<HTMLInputElement>(null);
 
   const isValidFile = (f: File) => {
     const name = f.name.toLowerCase();
