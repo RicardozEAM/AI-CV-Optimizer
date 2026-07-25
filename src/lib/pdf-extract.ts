@@ -31,16 +31,23 @@ export async function extractTextFromPdf(file: File): Promise<string> {
 
 export async function extractTextFromDocx(file: File): Promise<string> {
   const arrayBuffer = await file.arrayBuffer();
-  const result = await mammoth.extractRawText({ arrayBuffer });
-  return result.value;
+  try {
+    const result = await mammoth.extractRawText({ arrayBuffer });
+    return result.value;
+  } catch {
+    throw new Error("No se pudo leer el archivo Word. Asegúrate de que sea un .docx válido (no .doc antiguo) y vuelve a intentarlo.");
+  }
 }
 
 export async function extractText(file: File): Promise<string> {
   const name = file.name.toLowerCase();
   if (name.endsWith(".pdf")) {
     return extractTextFromPdf(file);
-  } else if (name.endsWith(".docx") || name.endsWith(".doc")) {
+  } else if (name.endsWith(".docx")) {
     return extractTextFromDocx(file);
+  } else if (name.endsWith(".doc")) {
+    throw new Error("El formato .doc antiguo no es compatible. Guarda el CV como .docx o .pdf y vuelve a subirlo.");
   }
   throw new Error("Formato no soportado. Sube un archivo PDF o DOCX.");
+}
 }
