@@ -65,10 +65,15 @@ const ResultsSection = ({ result }: ResultsSectionProps) => {
             {isPlaceholder ? "Vista previa" : "Análisis completado"}
           </div>
           <h2 className="text-3xl font-bold tracking-tight text-foreground md:text-4xl text-balance">
-            {isPlaceholder ? "Resultado del análisis" : "Tu diagnóstico ATS"}
+            {isPlaceholder ? "Resultado del análisis" : "Diagnóstico ATS"}
           </h2>
-          <p className="mt-3 text-muted-foreground max-w-md mx-auto text-pretty">
-            {isPlaceholder ? "Así se verá tu diagnóstico tras analizar tu CV" : "Hemos analizado tu CV contra la vacante"}
+          {!isPlaceholder && result?.optimized_cv?.header?.full_name && (
+            <p className="mt-3 text-base font-semibold text-foreground">
+              Candidato: <span className="text-primary">{result.optimized_cv.header.full_name}</span>
+            </p>
+          )}
+          <p className="mt-2 text-muted-foreground max-w-md mx-auto text-pretty">
+            {isPlaceholder ? "Así se verá tu diagnóstico tras analizar tu CV" : "Análisis del perfil contra la vacante"}
           </p>
         </div>
 
