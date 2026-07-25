@@ -9,6 +9,7 @@ const CORS_HEADERS: Record<string, string> = {
 const JSON_RESPONSE_HEADERS = { ...CORS_HEADERS, "Content-Type": "application/json" };
 
 interface SessionPayload {
+  session_id?: string;
   position: string;
   candidate_name?: string;
   initial_score: number;
