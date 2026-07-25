@@ -1,0 +1,2 @@
+CREATE POLICY "Deny all authenticated access" ON public.analysis_sessions FOR ALL TO authenticated USING (false) WITH CHECK (false);
+CREATE POLICY "Deny all anon access" ON public.analysis_sessions FOR ALL TO anon USING (false) WITH CHECK (false);
