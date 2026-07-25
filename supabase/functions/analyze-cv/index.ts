@@ -44,7 +44,7 @@ async function checkRateLimit(ip: string): Promise<boolean> {
     return true;
   }
 
-  if (current.count >= 5) return false;
+  if (current.count >= 50) return false;
 
   await fetch(
     `${supabaseUrl}/rest/v1/rate_limits?ip=eq.${encodeURIComponent(ip)}&window_date=eq.${today}`,
