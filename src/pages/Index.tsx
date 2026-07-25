@@ -216,7 +216,25 @@ const Index = () => {
         submittedAnswers: null,
         previousScore: null,
         pendingOptimizedCv: null,
+        sessionId: null,
       });
+
+      // Persistir sesión inicial de análisis en el dashboard
+      try {
+        const saved = await saveAnalysisSession({
+          position: jdTextRef.current.slice(0, 120),
+          candidate_name: result.optimized_cv?.header?.full_name,
+          initial_score: result.analysis.match_score,
+          anonimized: true,
+        });
+        if (saved.session_id) {
+          setState((s) => ({ ...s, sessionId: saved.session_id }));
+        }
+      } catch (persistErr) {
+        if (import.meta.env.DEV) {
+          console.error("[handleAnalysisComplete] Persist error:", persistErr);
+        }
+      }
 
       setTimeout(() => {
         document.getElementById("resultados")?.scrollIntoView({ behavior: "smooth" });
