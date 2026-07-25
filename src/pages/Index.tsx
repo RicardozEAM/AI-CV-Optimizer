@@ -270,7 +270,24 @@ const Index = () => {
         submittedAnswers: null,
         previousScore: null,
         pendingOptimizedCv: null,
+        sessionId: null,
       });
+
+      try {
+        const saved = await saveAnalysisSession({
+          position: jdTextRef.current.slice(0, 120),
+          candidate_name: result.optimized_cv?.header?.full_name,
+          initial_score: result.analysis.match_score,
+          anonimized: true,
+        });
+        if (saved.session_id) {
+          setState((s) => ({ ...s, sessionId: saved.session_id }));
+        }
+      } catch (persistErr) {
+        if (import.meta.env.DEV) {
+          console.error("[handleRegenerate] Persist error:", persistErr);
+        }
+      }
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : "Intenta de nuevo.";
       toast({ title: "Error al regenerar", description: msg, variant: "destructive" });
