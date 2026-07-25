@@ -101,6 +101,21 @@ function hasValidOptimizedCV(result: CVAnalysisResult | null): boolean {
   const cv = result.optimized_cv;
   return !!(cv.header && cv.summary && Array.isArray(cv.work_experience));
 }
+// ─── Rotating phrase ──────────────────────────────────────────────────────────
+
+function RotatingPhrase({ phrases, intervalMs = 1800 }: { phrases: string[]; intervalMs?: number }) {
+  const [idx, setIdx] = useState(0);
+  useEffect(() => {
+    const t = setInterval(() => setIdx((i) => (i + 1) % phrases.length), intervalMs);
+    return () => clearInterval(t);
+  }, [phrases.length, intervalMs]);
+  return (
+    <p key={idx} className="text-sm font-semibold text-foreground animate-fade-up">
+      {phrases[idx]}
+    </p>
+  );
+}
+
 
 // ─── Component ────────────────────────────────────────────────────────────────
 
