@@ -48,6 +48,10 @@ function validateBody(body: unknown): SessionPayload {
     initial_score: Math.round(b.initial_score),
   };
 
+  if (isNonEmptyString(b.session_id)) {
+    payload.session_id = b.session_id.trim();
+  }
+
   if (isNonEmptyString(b.candidate_name)) {
     payload.candidate_name = b.candidate_name.trim();
   }
