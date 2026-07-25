@@ -2,6 +2,7 @@ import {
   useState,
   useRef,
   useCallback,
+  useEffect,
   Component,
   type ReactNode,
   type ErrorInfo,
@@ -100,6 +101,21 @@ function hasValidOptimizedCV(result: CVAnalysisResult | null): boolean {
   const cv = result.optimized_cv;
   return !!(cv.header && cv.summary && Array.isArray(cv.work_experience));
 }
+// ─── Rotating phrase ──────────────────────────────────────────────────────────
+
+function RotatingPhrase({ phrases, intervalMs = 1800 }: { phrases: string[]; intervalMs?: number }) {
+  const [idx, setIdx] = useState(0);
+  useEffect(() => {
+    const t = setInterval(() => setIdx((i) => (i + 1) % phrases.length), intervalMs);
+    return () => clearInterval(t);
+  }, [phrases.length, intervalMs]);
+  return (
+    <p key={idx} className="text-sm font-semibold text-foreground animate-fade-up">
+      {phrases[idx]}
+    </p>
+  );
+}
+
 
 // ─── Component ────────────────────────────────────────────────────────────────
 
@@ -296,9 +312,15 @@ const Index = () => {
                       <Loader2 className="h-5 w-5 text-primary animate-spin" />
                     </div>
                     <div>
-                      <p className="text-sm font-semibold text-foreground">
-                        Generando CV estandarizado (formato Harvard)...
-                      </p>
+                      <RotatingPhrase
+                        phrases={[
+                          "Actualizando puntuación...",
+                          "Analizando potencial del candidato...",
+                          "Cruzando respuestas con la vacante...",
+                          "Recalibrando keywords detectadas...",
+                          "Consolidando nueva evidencia técnica...",
+                        ]}
+                      />
                       <p className="text-xs text-muted-foreground">Esto puede tomar unos segundos</p>
                     </div>
                   </div>
